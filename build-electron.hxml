@@ -1,0 +1,5 @@
+-cp src
+-main exp.db.Electron
+-js bin/index.js
+
+-lib electron

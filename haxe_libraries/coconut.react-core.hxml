@@ -1,0 +1,6 @@
+-lib react-next
+-lib coconut.ui
+-cp ${SCOPE_DIR}/../coconut.react/src
+-D coconut.react-core=0.2.1
+${SCOPE_DIR}/../coconut.react/extraParams.hxml
+--macro Sys.println("haxe_libraries/coconut.react-core.hxml:4: [Warning] Using dev version of library coconut.react-core")

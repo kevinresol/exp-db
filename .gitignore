@@ -1,0 +1,3 @@
+bin/app.js*
+bin/index.js*
+node_modules

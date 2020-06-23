@@ -1,0 +1,13 @@
+-cp lib
+-cp src
+-main exp.db.Main
+-js bin/app.js
+
+-lib hxnodejs
+-lib coconut.react-dom
+-lib cix
+-lib material-ui
+
+-D no-deprecation-warnings
+-D cix.embed
+-debug
