@@ -10,6 +10,7 @@ class TableView extends View {
 	@:attr var table:TableData;
 	
 	@:state var showColumnAdder:Bool = false;
+	@:computed var columns:PureList<Column> = [for(column in table.columns.values()) column];
 	
 	static final MAIN = css('
 		flex: 1;
@@ -25,7 +26,7 @@ class TableView extends View {
 				<Sheet ${...table}/>
 				<ColumnAdder
 					open=${showColumnAdder}
-					columns=${table.columnNames}
+					columns=${columns}
 					tables=${database.tableNames}
 					onCancel=${showColumnAdder = false}
 					onConfirm=${table.columns.push}
@@ -37,7 +38,7 @@ class TableView extends View {
 
 class ColumnAdder extends View {
 	@:attr var open:Bool;
-	@:attr var columns:PureList<String>;
+	@:attr var columns:PureList<Column>;
 	@:attr var tables:PureList<String>;
 	@:attr var onCancel:Void->Void = null;
 	@:attr var onConfirm:Column->Void;
@@ -48,11 +49,15 @@ class ColumnAdder extends View {
 	@:computed var validation:Option<Error> = {
 		if(name.length == 0) {
 			Some(new Error('Please input name'));
-		} else if(columns.exists(v -> v == name)) {
+		} else if(columns.exists(v -> v.name == name)) {
 			Some(new Error('Column name already exists'));
 		} else switch type {
-			case Ref(null): Some(new Error('Please select a referenced table'));
-			case Custom(null): Some(new Error('Please select a custom type'));
+			case Ref(null):
+				Some(new Error('Please select a referenced table'));
+			case Custom(null):
+				Some(new Error('Please select a custom type'));
+			case Identifier if(columns.exists(v -> v.type == Identifier)):
+				Some(new Error('Only one Identifier column is allowed'));
 			case _: None;
 		}
 	}
@@ -79,10 +84,10 @@ class ColumnAdder extends View {
 					<FormHelperText>${validation.map(e -> e.message).orNull()}</FormHelperText>
 				</FormControl>
 				<Button onClick=${onCancel} color=${Primary}>
-					Cancel
+					Close
 				</Button>
 				<Button disabled=${validation != None} onClick=${confirm} color=${Primary}>
-					Confirm
+					Add
 				</Button>
 			</DialogActions>
 		</Dialog>
@@ -94,46 +99,3 @@ class ColumnAdder extends View {
 	}
 }
 
-class ValueTypeSelector extends View {
-	@:attr var tables:PureList<String>;
-	@:controlled var type:ValueType;
-	
-	static var list:Array<ValueType> = [
-		Identifier,
-		Integer,
-		Text,
-		Ref(null),
-		Custom(null),
-	];
-	
-	function render() '
-		<>
-			<FormControl fullWidth margin=${Dense}>
-				<InputLabel>Type</InputLabel>
-				<Select
-					value=${type.getIndex()}
-					onChange=${e -> type = list[(cast e.target).value]}
-				>
-					<for ${v in list}>
-						<MenuItem value=${v.getIndex()}>${v.getName()}</MenuItem>
-					</for>
-				</Select>
-			</FormControl>
-			<switch ${type}>
-				<case ${Ref(v)}>
-					<FormControl fullWidth margin=${Dense}>
-						<InputLabel>Table</InputLabel>
-						<Select
-							value=${v == null ? '' : v}
-							onChange=${e -> type = Ref((cast e.target).value)}
-						>
-							<for ${table in tables}>
-								<MenuItem value=${table}>${table}</MenuItem>
-							</for>
-						</Select>
-					</FormControl>
-				<case ${_}>
-			</switch>
-		</>
-	';
-}

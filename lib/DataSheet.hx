@@ -20,6 +20,24 @@ typedef DataSheetProps<Value> = {
 	?onContextMenu:(event:Event, cell:Cell<Value>, row:Int, col:Int)->Void,
 	?parsePaste:(value:String)->Array<Array<String>>,
 	?isCellNavigable:(cell:Cell<Value>, row:Int, col:Int)->Bool,
+	
+	?sheetRenderer:ReactType,
+	?rowRenderer:ReactType,
+	?cellRenderer:ReactType,
+	?valueViewer:ReactType,
+	?dataEditor:ReactType,
+	?selected:Selection,
+	?onSelect:Selection->Void,
+}
+
+typedef Selection = {
+	start:Address,
+	end:Address,
+}
+
+typedef Address = {
+	i:Int,
+	j:Int,
 }
 
 typedef Addition = {

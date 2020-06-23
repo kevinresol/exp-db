@@ -12,12 +12,13 @@ enum CellValue {
 	Header(v:String);
 	Invalid(v:String);
 	Value(v:Value);
+	Empty;
 }
 	
 // @:react.hoc(withStyles(styles))
 class Sheet extends View {
 	@:attr var columns:ObservableArray<Column>;
-	@:attr var rows:ObservableArray<ObservableMap<String, Value>>;
+	@:attr var rows:ObservableArray<ObservableMap<String, Content>>;
 	
 	@:skipCheck @:computed var header:Array<Cell<CellValue>> = {
 		var ret = [{value: Header(''), readOnly: true}];
@@ -32,7 +33,7 @@ class Sheet extends View {
 	@:skipCheck @:computed var footer:Array<Cell<CellValue>> = {
 		var ret:Array<Cell<CellValue>> = [{value: Header(''), readOnly: true}];
 		for(column in columns.values())
-			ret.push({value: Invalid('')});
+			ret.push({value: Empty});
 		ret;
 	}
 	
@@ -45,7 +46,8 @@ class Sheet extends View {
 				row.push({
 					value: switch rows.get(r).get(column.name) {
 						case null: Invalid('');
-						case v: Value(v);
+						case v if(v.interim != null): Invalid(v.interim);
+						case v: Value(v.value);
 					}
 				});
 			ret.push(row);
@@ -101,6 +103,7 @@ class Sheet extends View {
 			dataRenderer=${(cell, i, j) -> valueToString(cell.value)}
 			onContextMenu=${onContextMenu}
 			onCellsChanged=${onCellsChanged}
+			cellRenderer=${cellRenderer}
 		/>
 		</div>
 	';
@@ -125,7 +128,10 @@ class Sheet extends View {
 					row;
 			}
 			
-			row.set(column.name, parseValue(column.type, v.value));
+			row.set(column.name, switch parseValue(column.type, v.value) {
+				case Success(v): v;
+				case Failure(e): {value: switch row.get(column.name) {case null: null; case v: v.value;}, interim: v.value}
+			});
 		}
 		
 		for(change in changes) handle(change);
@@ -133,13 +139,50 @@ class Sheet extends View {
 	}
 	
 	
-	function parseValue(type:ValueType, value:String):Value {
+	
+	function cellRenderer(props:Dynamic) {
+		var style = switch (props.cell.value:CellValue) {
+			case Header(v): null;
+			case Invalid(v): {backgroundColor: 'rgba(200, 0, 0, 0.3)'}
+			case Value(v): null;
+			case Empty: null;
+		}
+		
+		return @hxx '
+			<td
+				style=${js.lib.Object.assign({}, props.style, style)}
+				class=${props.className}
+				onContextMenu=${props.onContextMenu}
+				onDoubleClick=${props.onDoubleClick}
+				onKeyUp=${props.onKeyUp}
+				onMouseDown=${props.onMouseDown}
+				onMouseOver=${props.onMouseOver}
+			>
+				${props.children}
+			</td>
+		';
+	}
+	
+	
+	
+	function parseValue(type:ValueType, value:String):Outcome<Value, Error> {
 		return switch type {
-			case Identifier: null;
-			case Integer: Integer(Std.parseInt(value));
-			case Text: Text(value);
-			case Ref(table): null;
-			case Custom(v): null;
+			case Identifier:
+				if(~/^[A-Za-z_][0-9A-Za-z_]*$/.match(value))
+					Success(Identifier(value));
+				else
+					Failure(new Error('Invalid identifier'));
+			case Integer:
+				if(~/\D/.match(value)) 
+					Failure(new Error('Invalid integer'));
+				else
+					Success(Integer(Std.parseInt(value)));
+			case Text:
+				Success(Text(value));
+			case Ref(table):
+				Failure(new Error('Not implemented'));
+			case Custom(v):
+				Failure(new Error('Not implemented'));
 		}
 	}
 	
@@ -149,6 +192,8 @@ class Sheet extends View {
 				v;
 			case Invalid(v):
 				v;
+			case Empty:
+				'';
 			case Value(v):
 				switch v {
 					case Identifier(v): v;

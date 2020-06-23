@@ -26,7 +26,7 @@ class BottomBar extends View {
 		<AppBar position=${Static} color=${Default}>
 			<Tabs
 				value=${activeTable}
-				onChange=${(e, value) -> {trace(value); activeTable = value;}}
+				onChange=${(e, value) -> activeTable = value}
 				indicatorColor=${Primary}
 				textColor=${Primary}
 				variant=${Scrollable}

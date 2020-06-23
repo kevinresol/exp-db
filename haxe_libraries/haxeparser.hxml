@@ -1,0 +1,4 @@
+-lib hxparse
+-cp ${SCOPE_DIR}/../haxeparser/src
+-D haxeparser=3.3.0
+--macro Sys.println("haxe_libraries/haxeparser.hxml:3: [Warning] Using dev version of library haxeparser")
