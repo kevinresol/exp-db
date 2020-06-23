@@ -1,7 +1,7 @@
-package exp.db.ui.component;
+package exp.db.app.ui.component;
 
 import exp.db.data.Database;
-import exp.db.data.Value;
+import exp.db.Value;
 import mui.core.*;
 import mui.core.styles.Styles.*;
 

@@ -1,12 +1,6 @@
-package exp.db.data;
+package exp.db;
 
-enum ValueType {
-	Identifier;
-	Integer;
-	Text;
-	Ref(table:String);
-	Custom(name:String);
-}
+import tink.pure.List;
 
 @:forward
 abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject {
@@ -16,7 +10,7 @@ abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject 
 		switch def.kind {
 			case TDEnum:
 				for(field in def.fields) {
-					var args = [];
+					var args:Array<Argument> = [];
 					switch field.kind {
 						case FVar(_): // no args
 						case FFun({args: list}):
@@ -65,6 +59,7 @@ abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject 
 		return def;
 	}
 }
+
 typedef CustomTypeObject = {
 	final name:String;
 	final fields:List<Field>;

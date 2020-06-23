@@ -1,5 +1,5 @@
 -cp src
--main exp.db.Electron
+-main exp.db.app.Electron
 -js bin/index.js
 
 -lib electron

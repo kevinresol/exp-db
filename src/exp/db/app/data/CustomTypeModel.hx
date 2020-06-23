@@ -1,6 +1,6 @@
-package exp.db.data;
+package exp.db.app.data;
 
-import exp.db.data.ValueType;
+import exp.db.ValueType;
 
 class CustomTypeModel implements Model {
 	@:editable var name:String;

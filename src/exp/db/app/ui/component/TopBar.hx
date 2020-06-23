@@ -1,4 +1,4 @@
-package exp.db.ui.component;
+package exp.db.app.ui.component;
 
 import mui.core.*;
 import mui.core.styles.Styles.*;

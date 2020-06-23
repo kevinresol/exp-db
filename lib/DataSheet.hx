@@ -1,5 +1,6 @@
 package;
 
+import haxe.DynamicAccess;
 import haxe.Constraints;
 import haxe.extern.EitherType;
 import react.ReactType;
@@ -10,9 +11,9 @@ import js.html.Event;
 @:jsRequire('react-datasheet', 'default')
 extern class DataSheet<Value> extends ReactComponentOfProps<DataSheetProps<Value>> {}
 
-
+typedef Data<Value> = Array<Array<Cell<Value>>>;
 typedef DataSheetProps<Value> = {
-	?data:Array<Array<Cell<Value>>>,
+	?data:Data<Value>,
 	?valueRenderer:(cell:Cell<Value>, row:Int, col:Int)->ReactSingleFragment,
 	?dataRenderer:(cell:Cell<Value>, row:Int, col:Int)->String,
 	?overflow:Overflow,
@@ -21,11 +22,12 @@ typedef DataSheetProps<Value> = {
 	?parsePaste:(value:String)->Array<Array<String>>,
 	?isCellNavigable:(cell:Cell<Value>, row:Int, col:Int)->Bool,
 	
-	?sheetRenderer:ReactType,
-	?rowRenderer:ReactType,
-	?cellRenderer:ReactType,
-	?valueViewer:ReactType,
-	?dataEditor:ReactType,
+	?attributesRenderer:Cell<Value>->DynamicAccess<String>,
+	?sheetRenderer:ReactTypeOf<SheetRendererProps<Value>>,
+	?rowRenderer:ReactTypeOf<RowRendererProps<Value>>,
+	?cellRenderer:ReactTypeOf<CellRendererProps<Value>>,
+	?valueViewer:ReactTypeOf<ValueViewerProps<Value>>,
+	?dataEditor:ReactTypeOf<DataEditorProps<Value>>,
 	?selected:Selection,
 	?onSelect:Selection->Void,
 }
@@ -60,4 +62,46 @@ enum abstract Overflow(String) {
 	var Wrap = 'wrap';
 	var NoWrap = 'nowrap';
 	var Clip = 'clip';
+}
+
+typedef SheetRendererProps<Value> = {
+	data:Data<Value>,
+	className:String,
+	children:ReactSingleFragment,
+}
+typedef RowRendererProps<Value> = {
+	row:Int,
+	cells:Array<Cell<Value>>,
+	children:ReactSingleFragment,
+}
+typedef CellRendererProps<Value> = {
+	row:Int,
+	col:Int,
+	cell:Cell<Value>,
+	className:String,
+	style:tink.domspec.Style,
+	selected:Bool,
+	editing:Bool,
+	updated:Bool,
+	attributesRenderer:Cell<Value>->DynamicAccess<String>,
+	onMouseDown:Function,
+	onMouseOver:Function,
+	onKeyUp:Function,
+	onDoubleClick:Function,
+	onContextMenu:Function,
+	children:ReactSingleFragment,
+}
+typedef ValueViewerProps<Value> = {
+	cell:Cell<Value>,
+	row:Int,
+	col:Int,
+	value:ReactSingleFragment,
+}
+
+typedef DataEditorProps<Value> = {
+	> ValueViewerProps<Value>,
+	onChange:String->Void,
+	onCommit:Dynamic->Void,
+	onKeyDown:js.html.KeyboardEvent->Void,
+	onRevert:Void->Void,
 }

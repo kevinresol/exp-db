@@ -1,4 +1,6 @@
-package exp.db.data;
+package exp.db.app.data;
+
+import exp.db.*;
 
 class DatabaseModel implements Model {
 	@:constant var tables:ObservableMap<String, TableModel> = new ObservableMap([]);
@@ -19,10 +21,6 @@ class TableModel implements Model {
 	@:computed var columnNames:List<String> = [for(column in columns.values()) column.name];
 }
 
-typedef Column = {
-	final name:String;
-	final type:ValueType;
-}
 
 @:forward
 abstract Content(ContentObject) from ContentObject to ContentObject {

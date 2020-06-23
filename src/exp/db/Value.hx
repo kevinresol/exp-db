@@ -1,4 +1,6 @@
-package exp.db.data;
+package exp.db;
+
+import tink.pure.List;
 
 enum Value {
 	Identifier(v:String);

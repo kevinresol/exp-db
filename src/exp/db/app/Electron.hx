@@ -1,4 +1,4 @@
-package exp.db;
+package exp.db.app;
 
 import js.Node;
 import js.Node.__dirname;

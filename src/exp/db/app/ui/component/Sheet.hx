@@ -1,8 +1,8 @@
-package exp.db.ui.component;
+package exp.db.app.ui.component;
 
-import exp.db.data.DatabaseModel;
-import exp.db.data.Value;
-import exp.db.data.ValueType;
+import exp.db.app.data.DatabaseModel;
+import exp.db.Value;
+import exp.db.ValueType;
 import haxe.DynamicAccess;
 import mui.core.*;
 import mui.core.styles.Styles.*;
@@ -38,7 +38,6 @@ class Sheet extends View {
 	}
 	
 	@:skipCheck @:computed var data:Array<Array<Cell<CellValue>>> = {
-		trace('data');
 		var ret = [header];
 		for(r in 0...rows.length) {
 			var row:Array<Cell<CellValue>> = [{value: Header('$r'), readOnly: true}];
@@ -97,14 +96,15 @@ class Sheet extends View {
 	
 	function render() '
 		<div class=${CONTAINER}>
-		<DataSheet
-			data=${data}
-			valueRenderer=${(cell, i, j) -> valueToString(cell.value)}
-			dataRenderer=${(cell, i, j) -> valueToString(cell.value)}
-			onContextMenu=${onContextMenu}
-			onCellsChanged=${onCellsChanged}
-			cellRenderer=${cellRenderer}
-		/>
+			<DataSheet
+				data=${data}
+				valueRenderer=${(cell, i, j) -> valueToString(cell.value)}
+				dataRenderer=${(cell, i, j) -> valueToString(cell.value)}
+				onContextMenu=${onContextMenu}
+				onCellsChanged=${onCellsChanged}
+				dataEditor=${dataEditor}
+				cellRenderer=${cellRenderer}
+			/>
 		</div>
 	';
 	
@@ -128,6 +128,8 @@ class Sheet extends View {
 					row;
 			}
 			
+			trace(v.value);
+			
 			row.set(column.name, switch parseValue(column.type, v.value) {
 				case Success(v): v;
 				case Failure(e): {value: switch row.get(column.name) {case null: null; case v: v.value;}, interim: v.value}
@@ -138,9 +140,27 @@ class Sheet extends View {
 		if(additions != null) for(addition in additions) handle(addition);
 	}
 	
+	function dataEditor(props:DataEditorProps<CellValue>) {
+		return switch columns.get((props.col:Int) - 1) {
+			case {type: Identifier}:
+				@hxx '
+					<DataSheet
+						data=${[
+							[{value: null, readOnly: true}, {value: 0, readOnly: true}, {value: 1, readOnly: true}],
+							[{value: 0, readOnly: true}, {value: 1}, {value: 2}],
+							[{value: 1, readOnly: true}, {value: 3}, {value: 4}],
+						]}
+						valueRenderer=${(cell, i, j) -> Std.string(cell.value)}
+						dataRenderer=${(cell, i, j) -> Std.string(cell.value)}
+					/>
+				';
+			case _:
+				trace(props);
+				react.ReactMacro.jsx('<input class="data-editor" ${...props} onChange=${e -> props.onChange(e.target.value)}/>');
+		}
+	}
 	
-	
-	function cellRenderer(props:Dynamic) {
+	function cellRenderer(props:CellRendererProps<CellValue>) {
 		var style = switch (props.cell.value:CellValue) {
 			case Header(v): null;
 			case Invalid(v): {backgroundColor: 'rgba(200, 0, 0, 0.3)'}
@@ -152,11 +172,11 @@ class Sheet extends View {
 			<td
 				style=${js.lib.Object.assign({}, props.style, style)}
 				class=${props.className}
-				onContextMenu=${cast props.onContextMenu}
-				onDoubleClick=${cast props.onDoubleClick}
-				onKeyUp=${cast props.onKeyUp}
-				onMouseDown=${cast props.onMouseDown}
-				onMouseOver=${cast props.onMouseOver}
+				onContextMenu=${props.onContextMenu}
+				onDoubleClick=${props.onDoubleClick}
+				onKeyUp=${props.onKeyUp}
+				onMouseDown=${props.onMouseDown}
+				onMouseOver=${props.onMouseOver}
 			>
 				${props.children}
 			</td>

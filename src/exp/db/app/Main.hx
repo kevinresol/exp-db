@@ -1,10 +1,10 @@
-package exp.db;
+package exp.db.app;
 
 import coconut.react.*;
-import exp.db.ui.*;
-import exp.db.data.DatabaseModel;
-import exp.db.data.CustomTypeModel;
-import exp.db.data.Value;
+import exp.db.app.ui.*;
+import exp.db.app.data.CustomTypeModel;
+import exp.db.app.data.DatabaseModel;
+import exp.db.Value;
 import tink.state.*;
 
 class Main {

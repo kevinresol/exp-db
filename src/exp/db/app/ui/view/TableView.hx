@@ -1,9 +1,9 @@
-package exp.db.ui.view;
+package exp.db.app.ui.view;
 
 import mui.core.*;
-import exp.db.ui.component.*;
-import exp.db.data.DatabaseModel;
-import exp.db.data.ValueType;
+import exp.db.app.ui.component.*;
+import exp.db.app.data.DatabaseModel;
+import exp.db.ValueType;
 
 class TableView extends View {
 	@:attr var database:DatabaseModel;

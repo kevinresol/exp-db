@@ -1,7 +1,7 @@
-package exp.db.ui.component;
+package exp.db.app.ui.component;
 
 import mui.core.*;
-import exp.db.data.ValueType;
+import exp.db.ValueType;
 
 class ValueTypeSelector extends View {
 	@:attr var tables:PureList<String>;

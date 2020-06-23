@@ -1,9 +1,9 @@
-package exp.db.ui.component;
+package exp.db.app.ui.component;
 
 import mui.core.*;
 import mui.core.styles.Styles.*;
-import exp.db.data.CustomTypeModel;
-import exp.db.data.ValueType;
+import exp.db.app.data.CustomTypeModel;
+import exp.db.ValueType;
 
 class CustomTypeEditor extends View {
 	

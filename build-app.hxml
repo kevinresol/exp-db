@@ -1,6 +1,6 @@
 -cp lib
 -cp src
--main exp.db.Main
+-main exp.db.app.Main
 -js bin/app.js
 
 -lib hxnodejs

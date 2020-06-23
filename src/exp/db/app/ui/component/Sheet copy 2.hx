@@ -1,8 +1,8 @@
-package exp.db.ui.component;
+package exp.db.app.ui.component;
 
 import exp.db.data.Database;
-import exp.db.data.Value;
-import exp.db.data.ValueType;
+import exp.db.Value;
+import exp.db.ValueType;
 import haxe.DynamicAccess;
 import mui.core.*;
 import mui.core.styles.Styles.*;

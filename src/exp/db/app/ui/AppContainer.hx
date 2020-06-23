@@ -1,9 +1,9 @@
-package exp.db.ui;
+package exp.db.app.ui;
 
 import mui.core.*;
-import exp.db.data.DatabaseModel;
-import exp.db.ui.component.*;
-import exp.db.ui.view.*;
+import exp.db.app.data.DatabaseModel;
+import exp.db.app.ui.component.*;
+import exp.db.app.ui.view.*;
 
 class AppContainer extends View {
 	@:attr var database:DatabaseModel;
