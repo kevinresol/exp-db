@@ -28,12 +28,14 @@ class Sheet extends View {
 			});
 		ret;
 	}
+	
 	@:skipCheck @:computed var footer:Array<Cell<CellValue>> = {
 		var ret:Array<Cell<CellValue>> = [{value: Header(''), readOnly: true}];
 		for(column in columns.values())
 			ret.push({value: Invalid('')});
 		ret;
 	}
+	
 	@:skipCheck @:computed var data:Array<Array<Cell<CellValue>>> = {
 		trace('data');
 		var ret = [header];
@@ -51,6 +53,8 @@ class Sheet extends View {
 		ret.push(footer);
 		ret;
 	}
+	
+	
 	
 	// @:react.injected var classes:{
 	// 	table:String,
@@ -95,30 +99,38 @@ class Sheet extends View {
 			data=${data}
 			valueRenderer=${(cell, i, j) -> valueToString(cell.value)}
 			dataRenderer=${(cell, i, j) -> valueToString(cell.value)}
-			onCellsChanged=${(changes, additions) -> {
-				for(change in changes) {
-					var c = change.col - 1; // minus header offset
-					var r = change.row - 1; // minus header offset
-					
-					var column = columns.get(c);
-					var row = switch rows.get(r) { // minus header offset
-						case null:
-							trace(r);
-							trace(rows.length);
-							var row = new ObservableMap([]);
-							rows.set(r, row);
-							trace(rows.length);
-							row;
-						case row:
-							row;
-					}
-					
-					row.set(column.name, parseValue(column.type, change.value));
-				}
-			}}
+			onContextMenu=${onContextMenu}
+			onCellsChanged=${onCellsChanged}
 		/>
 		</div>
 	';
+	
+	function onContextMenu(event:js.html.Event, cell:Cell<CellValue>, row:Int, col:Int) {
+		trace(event);
+	}
+	
+	function onCellsChanged(changes:Array<Change<CellValue>>, additions:Array<Addition>) {
+		
+		function handle(v:Addition) {
+			var c = v.col - 1; // minus header offset
+			var r = v.row - 1; // minus header offset
+			
+			var column = columns.get(c);
+			var row = switch rows.get(r) { // minus header offset
+				case null:
+					var row = new ObservableMap([]);
+					rows.set(r, row);
+					row;
+				case row:
+					row;
+			}
+			
+			row.set(column.name, parseValue(column.type, v.value));
+		}
+		
+		for(change in changes) handle(change);
+		if(additions != null) for(addition in additions) handle(addition);
+	}
 	
 	
 	function parseValue(type:ValueType, value:String):Value {
