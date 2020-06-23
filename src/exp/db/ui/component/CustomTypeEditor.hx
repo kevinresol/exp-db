@@ -8,6 +8,7 @@ import exp.db.data.ValueType;
 class CustomTypeEditor extends View {
 	
 	@:attr var tables:PureList<String>;
+	@:attr var onSubmit:PureList<CustomType>->Void = null;
 	@:state var value:String = '';
 	
 	@:skipCheck @:computed var typedefs:Array<haxe.macro.Expr.TypeDefinition> = {
@@ -29,17 +30,36 @@ class CustomTypeEditor extends View {
 		margin: 12px;
 	');
 	
+	static final INPUT = css('
+		& textarea {
+			font-family: monospace;
+		}
+	');
+	
 	function render() '
-		<Paper class=${ROOT}>
-			<TextField
-				autoFocus
-				label="Syntax"
-				multiline
-				value=${value}
-				onChange=${e -> {value = (cast e.target).value; coconut.react.Renderer.updateAll();}}
-				fullWidth
-			/>
-			<pre>${...[for(type in types) printer.printTypeDefinition(type)]}</pre>
-		</Paper>
+		<Grid container spacing=${Spacing_1}>
+			<Grid item xs={6}>
+				<Paper class=${ROOT}>
+					<TextField
+						class=${INPUT}
+						autoFocus
+						label="Syntax"
+						multiline
+						value=${value}
+						onChange=${e -> {value = (cast e.target).value; coconut.react.Renderer.updateAll();}}
+						fullWidth
+					/>
+					
+				</Paper>
+			</Grid>
+			<Grid item xs={6}>
+				<Paper class=${ROOT}>
+					<for ${type in types}>
+						<pre>${printer.printTypeDefinition(type)}</pre>
+					</for>
+				</Paper>
+			</Grid>
+		</Grid>
+		
 	';
 }

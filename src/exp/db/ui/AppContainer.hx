@@ -11,12 +11,7 @@ class AppContainer extends View {
 	function render() '
 		<>
 			<CssBaseline />
-			<!--
 			<DatabaseView database=${database}/>
-			-->
-			<for ${custom in database.customTypes.values()}>
-				<CustomTypeEditor tables=${database.tableNames} />
-			</for>
 		</>
 	';
 }

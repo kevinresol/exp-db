@@ -2,12 +2,12 @@ package exp.db.ui.view;
 
 import mui.core.*;
 import exp.db.ui.component.*;
-import exp.db.data.Database;
+import exp.db.data.DatabaseModel;
 import exp.db.data.ValueType;
 
 class TableView extends View {
-	@:attr var database:Database;
-	@:attr var table:TableData;
+	@:attr var database:DatabaseModel;
+	@:attr var table:TableModel;
 	
 	@:state var showColumnAdder:Bool = false;
 	@:computed var columns:PureList<Column> = [for(column in table.columns.values()) column];

@@ -1,6 +1,6 @@
 package exp.db.ui.component;
 
-import exp.db.data.Database;
+import exp.db.data.DatabaseModel;
 import exp.db.data.Value;
 import exp.db.data.ValueType;
 import haxe.DynamicAccess;
@@ -152,11 +152,11 @@ class Sheet extends View {
 			<td
 				style=${js.lib.Object.assign({}, props.style, style)}
 				class=${props.className}
-				onContextMenu=${props.onContextMenu}
-				onDoubleClick=${props.onDoubleClick}
-				onKeyUp=${props.onKeyUp}
-				onMouseDown=${props.onMouseDown}
-				onMouseOver=${props.onMouseOver}
+				onContextMenu=${cast props.onContextMenu}
+				onDoubleClick=${cast props.onDoubleClick}
+				onKeyUp=${cast props.onKeyUp}
+				onMouseDown=${cast props.onMouseDown}
+				onMouseOver=${cast props.onMouseOver}
 			>
 				${props.children}
 			</td>
