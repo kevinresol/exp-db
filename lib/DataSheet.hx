@@ -7,6 +7,8 @@ import react.ReactType;
 import react.ReactComponent;
 import js.lib.Promise;
 import js.html.Event;
+import js.html.MouseEvent;
+import js.html.KeyboardEvent;
 
 @:jsRequire('react-datasheet', 'default')
 extern class DataSheet<Value> extends ReactComponentOfProps<DataSheetProps<Value>> {}
@@ -84,11 +86,11 @@ typedef CellRendererProps<Value> = {
 	editing:Bool,
 	updated:Bool,
 	attributesRenderer:Cell<Value>->DynamicAccess<String>,
-	onMouseDown:Function,
-	onMouseOver:Function,
-	onKeyUp:Function,
-	onDoubleClick:Function,
-	onContextMenu:Function,
+	onMouseDown:MouseEvent->Void,
+	onMouseOver:MouseEvent->Void,
+	onKeyUp:KeyboardEvent->Void,
+	onDoubleClick:MouseEvent->Void,
+	onContextMenu:Event->Void,
 	children:ReactSingleFragment,
 }
 typedef ValueViewerProps<Value> = {
@@ -102,6 +104,6 @@ typedef DataEditorProps<Value> = {
 	> ValueViewerProps<Value>,
 	onChange:String->Void,
 	onCommit:Dynamic->Void,
-	onKeyDown:js.html.KeyboardEvent->Void,
+	onKeyDown:KeyboardEvent->Void,
 	onRevert:Void->Void,
 }
