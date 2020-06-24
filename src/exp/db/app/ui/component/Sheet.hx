@@ -25,17 +25,17 @@ class Sheet extends View {
 	@:state var disablePageClick:Bool = false;
 	
 	@:skipCheck @:computed var header:Array<Cell<CellValue>> = {
-		var ret = [{value: Header(''), readOnly: true}];
+		var ret = [{value: Header(''), readOnly: true, disableEvents: true}];
 		for(column in columns.values())
 			ret.push({
 				value: Header(column.name),
-				readOnly: true,
+				readOnly: true, disableEvents: true,
 			});
 		ret;
 	}
 	
 	@:skipCheck @:computed var footer:Array<Cell<CellValue>> = {
-		var ret:Array<Cell<CellValue>> = [{value: Header(''), readOnly: true}];
+		var ret:Array<Cell<CellValue>> = [{value: Header(''), readOnly: true, disableEvents: true}];
 		for(column in columns.values())
 			ret.push({value: Empty});
 		ret;
@@ -44,7 +44,7 @@ class Sheet extends View {
 	@:skipCheck @:computed var data:Array<Array<Cell<CellValue>>> = {
 		var ret = [header];
 		for(r in 0...rows.length) {
-			var row:Array<Cell<CellValue>> = [{value: Header('$r'), readOnly: true}];
+			var row:Array<Cell<CellValue>> = [{value: Header('$r'), readOnly: true, disableEvents: true}];
 			for(column in columns.values())
 				row.push({
 					value: switch rows.get(r).get(column.name) {
@@ -98,13 +98,15 @@ class Sheet extends View {
 		}
 	');
 	
+	var ADD_COLUMN_BUTTON:coconut.react.RenderResult = coconut.react.Renderer.hxx('<button onclick=${showColumnAdder = true}>Add</button>');
+	
 	function render() '
 		<div class=${CONTAINER}>
 			<DataSheet
 				data=${data}
 				valueRenderer=${(cell, i, j) -> {
 					if(i == 0 && j == 0) {
-						@hxx '<button onclick=${showColumnAdder = true}>Add</button>';
+						ADD_COLUMN_BUTTON;
 					} else {
 						valueToString(cell.value);
 					}
@@ -115,6 +117,7 @@ class Sheet extends View {
 				onCellsChanged=${onCellsChanged}
 				dataEditor=${dataEditor}
 				cellRenderer=${cellRenderer}
+				isCellNavigable=${isCellNavigable}
 			/>
 			<ColumnAdder
 				open=${showColumnAdder}
@@ -126,7 +129,7 @@ class Sheet extends View {
 		</div>
 	';
 	
-	function onContextMenu(event:js.html.Event, cell:Cell<CellValue>, row:Int, col:Int) {
+	static function onContextMenu(event:js.html.Event, cell:Cell<CellValue>, row:Int, col:Int) {
 		trace(event);
 	}
 	
@@ -145,8 +148,6 @@ class Sheet extends View {
 				case row:
 					row;
 			}
-			
-			trace(v.value);
 			
 			row.set(column.name, switch parseValue(column.type, v.value) {
 				case Success(v): v;
@@ -187,7 +188,7 @@ class Sheet extends View {
 		}
 	}
 	
-	function cellRenderer(props:CellRendererProps<CellValue>) {
+	static function cellRenderer(props:CellRendererProps<CellValue>) {
 		var style = switch (props.cell.value:CellValue) {
 			case Header(v): null;
 			case Invalid(v): {backgroundColor: 'rgba(200, 0, 0, 0.3)'}
@@ -195,7 +196,7 @@ class Sheet extends View {
 			case Empty: null;
 		}
 		
-		return @hxx '
+		return coconut.Ui.hxx('
 			<td
 				style=${js.lib.Object.assign({}, props.style, style)}
 				class=${props.className}
@@ -207,12 +208,10 @@ class Sheet extends View {
 			>
 				${props.children}
 			</td>
-		';
+		');
 	}
 	
-	
-	
-	function parseValue(type:ValueType, value:String):Outcome<Value, Error> {
+	static function parseValue(type:ValueType, value:String):Outcome<Value, Error> {
 		return switch type {
 			case Identifier:
 				if(~/^[A-Za-z_][0-9A-Za-z_]*$/.match(value))
@@ -238,7 +237,7 @@ class Sheet extends View {
 		}
 	}
 	
-	function valueToString(value:CellValue):String {
+	static function valueToString(value:CellValue):String {
 		return switch value {
 			case Header(v):
 				v;
@@ -256,6 +255,10 @@ class Sheet extends View {
 					case Custom(v): null;
 				}
 		}
+	}
+	
+	static function isCellNavigable(cell, row, col) {
+		return row != 0 && col != 0;
 	}
 }
 
