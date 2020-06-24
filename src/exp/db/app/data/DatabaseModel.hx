@@ -37,17 +37,33 @@ class TableModel implements Model {
 	public static function fromTable(v:Table) {
 		return new TableModel({
 			name: v.name,
-			columns: new ObservableArray(v.columns.toArray()),
-			rows: new ObservableArray([for(row in v.rows) new ObservableMap([for(name => value in row) name => (value:Content)])]),
+			columns: fromColumns(v.columns),
+			rows: fromRows(v.rows),
 		});
 	}
 	
 	public function toTable():Table {
 		return {
 			name: name,
-			columns: columns.toArray(),
-			rows: [for(row in rows.values()) ([for(key in row.keys()) key => row.get(key).value]:Row)],
+			columns: toColumns(columns),
+			rows: toRows(rows),
 		}
+	}
+	
+	public static function fromColumns(v:List<Column>):ObservableArray<Column> {
+		return new ObservableArray(v.toArray());
+	}
+	
+	public static function toColumns(v:ObservableArray<Column>):List<Column> {
+		return v.toArray();
+	}
+	
+	public static function fromRows(v:List<Row>):ObservableArray<ObservableMap<String, Content>> {
+		return new ObservableArray([for(row in v) new ObservableMap([for(name => value in row) name => (value:Content)])]);
+	}
+	
+	public static function toRows(v:ObservableArray<ObservableMap<String, Content>>):List<Row> {
+		return [for(row in v.values()) ([for(key in row.keys()) key => row.get(key).value]:Row)];
 	}
 }
 

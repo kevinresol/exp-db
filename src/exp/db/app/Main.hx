@@ -4,6 +4,7 @@ import coconut.react.*;
 import exp.db.app.ui.*;
 import exp.db.app.data.DatabaseModel;
 import exp.db.Value;
+import exp.db.Column;
 import exp.db.CustomType;
 import tink.state.*;
 import tink.pure.List.fromArray as list;
@@ -29,10 +30,11 @@ class Main {
 		database.addTable('events');
 		var table = database.tables.get('events');
 		table.columns.push({name: 'id', type: Identifier});
+		table.columns.push({name: 'sub', type: SubTable(list([{name: 'foo', type: exp.db.ValueType.Integer}]))});
 		table.columns.push({name: 'title', type: Integer});
 		table.columns.push({name: 'description', type: Text});
 		for(i in 0...25) 
-			table.rows.push(new ObservableMap<String, Content>(['id' => Identifier('id_$i'),'title' => Integer(i), 'description' => Text('My Game')]));
+			table.rows.push(new ObservableMap<String, Content>(['id' => Identifier('id_$i'), 'sub' => SubTable([]), 'title' => Integer(i), 'description' => Text('My Game')]));
 		
 		database.addTable('foo');
 		var table = database.tables.get('foo');

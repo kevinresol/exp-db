@@ -141,22 +141,24 @@ class Sheet extends View {
 	}
 	
 	function dataEditor(props:DataEditorProps<CellValue>) {
-		return switch columns.get((props.col:Int) - 1) {
-			case {type: Identifier}:
+		return switch columns.get(props.col - 1) {
+			case {type: SubTable(columns)}:
+				var columns = TableModel.fromColumns(columns);
+				var rows = TableModel.fromRows(switch props.cell.value {
+					case Value(SubTable(rows)): rows;
+					case _: null;
+				});
+				
 				@hxx '
-					<DataSheet
-						data=${[
-							[{value: null, readOnly: true}, {value: 0, readOnly: true}, {value: 1, readOnly: true}],
-							[{value: 0, readOnly: true}, {value: 1}, {value: 2}],
-							[{value: 1, readOnly: true}, {value: 3}, {value: 4}],
-						]}
-						valueRenderer=${(cell, i, j) -> Std.string(cell.value)}
-						dataRenderer=${(cell, i, j) -> Std.string(cell.value)}
-					/>
+					<Modal open disablePortal onClose=${() -> props.onCommit(tink.Json.stringify(TableModel.toRows(rows)))}>
+						<Paper>
+							<Sheet columns=${columns} rows=${rows}/>
+						</Paper>
+					</Modal>
 				';
 			case _:
 				trace(props);
-				react.ReactMacro.jsx('<input class="data-editor" ${...props} onChange=${e -> props.onChange(e.target.value)}/>');
+				react.ReactMacro.jsx('<input class="data-editor" autoFocus ${...props} onChange=${e -> props.onChange(e.target.value)}/>');
 		}
 	}
 	
@@ -199,6 +201,11 @@ class Sheet extends View {
 					Success(Integer(Std.parseInt(value)));
 			case Text:
 				Success(Text(value));
+			case SubTable(name):
+				// TODO: check value against table schema
+				var v = tink.Json.parse((value:PureList<Row>)).map(exp.db.Value.SubTable);
+				trace(v);
+				v;
 			case Ref(table):
 				Failure(new Error('Not implemented'));
 			case Custom(v):
@@ -219,6 +226,7 @@ class Sheet extends View {
 					case Identifier(v): v;
 					case Integer(v): '$v';
 					case Text(v): v;
+					case SubTable(rows): '${rows.length} row(s)...';
 					case Ref(v): v;
 					case Custom(v): null;
 				}

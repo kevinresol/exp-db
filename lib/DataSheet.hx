@@ -103,7 +103,7 @@ typedef ValueViewerProps<Value> = {
 typedef DataEditorProps<Value> = {
 	> ValueViewerProps<Value>,
 	onChange:String->Void,
-	onCommit:Dynamic->Void,
+	onCommit:(value:String, ?event:KeyboardEvent)->Void,
 	onKeyDown:KeyboardEvent->Void,
 	onRevert:Void->Void,
 }
