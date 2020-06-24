@@ -2,13 +2,13 @@ package exp.db.app.ui.component;
 
 import mui.core.*;
 import mui.core.styles.Styles.*;
-import mui.icon.Add as AddIcon;
 
 @:react.hoc(withStyles(styles))
 class TopBar extends View {
 	
-	@:attr var onAdd:Void->Void = null;
+	@:attr var title:String = null;
 	@:attr var elevated:Bool = false;
+	@:attr var children:Children = null;
 	
 	@:react.injected var classes:{
 		title:String,
@@ -28,11 +28,9 @@ class TopBar extends View {
 		<AppBar elevation=${elevated ? null : 0} position=${Static} color=${Default}>
 			<Toolbar variant=${Dense}>
 				<Typography class=${classes.title}>
-					
+					${title}
 				</Typography>
-				<IconButton >
-					<AddIcon onClick=${onAdd}/>
-				</IconButton>
+				${...children}
 			</Toolbar>
 		</AppBar>
 	';

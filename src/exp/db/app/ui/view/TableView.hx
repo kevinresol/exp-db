@@ -1,6 +1,7 @@
 package exp.db.app.ui.view;
 
 import mui.core.*;
+import mui.icon.Add as AddIcon;
 import exp.db.app.ui.component.*;
 import exp.db.app.data.DatabaseModel;
 import exp.db.ValueType;
@@ -21,7 +22,11 @@ class TableView extends View {
 	// function render() '<><Sheet ${...table}/></>';
 	function render() '
 		<>
-			<TopBar onAdd=${showColumnAdder = true}/>
+			<TopBar>
+				<IconButton onClick=${_ -> showColumnAdder = true}>
+					<AddIcon/>
+				</IconButton>
+			</TopBar>
 			<Paper class=${MAIN}>
 				<Sheet ${...table}/>
 				<ColumnAdder

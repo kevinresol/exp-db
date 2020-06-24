@@ -1,6 +1,8 @@
 package exp.db.app.ui.view;
 
 import mui.core.*;
+import mui.icon.Add as AddIcon;
+import mui.icon.Save as SaveIcon;
 import exp.db.app.ui.component.*;
 import exp.db.app.data.DatabaseModel;
 import exp.db.ValueType;
@@ -31,7 +33,11 @@ class DatabaseView extends View {
 		<div class=${ROOT}>
 			<div class=${CONTAINER}>
 				<if ${showCustomTypeEditor}>
-					<CustomTypeEditor tables=${database.tableNames} />
+					<CustomTypeEditor
+						tables=${database.tableNames}
+						initialValue=${database.types}
+						onSubmit=${types -> database.types = types}
+					/>
 				</if>
 				<if ${table != null}>
 					<TableView database=${database} table=${table}/>
@@ -41,7 +47,14 @@ class DatabaseView extends View {
 				activeTable=${activeTable}
 				showCustomTypeEditor=${showCustomTypeEditor}
 				tables=${[for(name in database.tables.keys()) name]}
-			/>
+			>
+				<IconButton>
+					<AddIcon onClick=${_ -> {showCustomTypeEditor = true; activeTable = null;}}/>
+				</IconButton>
+				<IconButton>
+					<SaveIcon onClick=${_ -> trace(tink.Json.stringify(database.toDatabase()))}/>
+				</IconButton>
+			</BottomBar>
 		</div>
 	';
 }

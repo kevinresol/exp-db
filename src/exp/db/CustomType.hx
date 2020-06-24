@@ -4,7 +4,7 @@ import tink.pure.List;
 
 @:forward
 abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject {
-	inline function new(obj) this = obj;
+	public inline function new(obj) this = obj;
 	@:from public static function fromTypeDefintion(def:haxe.macro.Expr.TypeDefinition):CustomType {
 		var fields:Array<Field> = [];
 		switch def.kind {
@@ -27,7 +27,7 @@ abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject 
 					fields.push({name: field.name, args: args});
 				}
 			case _:
-				throw 'expected TDEnum';
+				// throw 'expected TDEnum';
 		}
 		return new CustomType({name: def.name, fields: fields});
 	}

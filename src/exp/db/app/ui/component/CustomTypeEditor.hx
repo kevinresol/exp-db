@@ -1,27 +1,25 @@
 package exp.db.app.ui.component;
 
 import mui.core.*;
+import mui.icon.Add as AddIcon;
 import mui.core.styles.Styles.*;
-import exp.db.app.data.CustomTypeModel;
 import exp.db.ValueType;
 
 class CustomTypeEditor extends View {
 	
 	@:attr var tables:PureList<String>;
 	@:attr var onSubmit:PureList<CustomType>->Void = null;
+	@:attr var initialValue:PureList<CustomType>;
 	@:state var value:String = '';
 	
-	@:skipCheck @:computed var typedefs:Array<haxe.macro.Expr.TypeDefinition> = {
-		try {
+	@:skipCheck @:computed var typedefs:Outcome<Array<haxe.macro.Expr.TypeDefinition>, Error> = {
+		Error.catchExceptions(() -> {
 			var e = new haxeparser.HaxeParser(byte.ByteData.ofString(value), '').parse();
 			e.decls.map(v -> haxeparser.DefinitionConverter.convertTypeDef([], v.decl)).filter(v -> v.kind == TDEnum);
-		} catch(e:Dynamic) {
-			trace(e);
-			[];
-		}
+		});
 	}
 	
-	@:skipCheck @:computed var types:Array<CustomType> = [for(def in typedefs) (def:CustomType)];
+	@:skipCheck @:computed var types:Outcome<Array<CustomType>, Error> = typedefs.map(list -> [for(def in list) (def:CustomType)]);
 	
 	static final printer = new haxe.macro.Printer();
 	
@@ -37,6 +35,12 @@ class CustomTypeEditor extends View {
 	');
 	
 	function render() '
+		<>
+		<TopBar>
+			<IconButton disabled=${!types.isSuccess()} onClick=${_ -> onSubmit(types.sure())}>
+				<AddIcon/>
+			</IconButton>
+		</TopBar>
 		<Grid container spacing=${Spacing_1}>
 			<Grid item xs={6}>
 				<Paper class=${ROOT}>
@@ -54,12 +58,20 @@ class CustomTypeEditor extends View {
 			</Grid>
 			<Grid item xs={6}>
 				<Paper class=${ROOT}>
-					<for ${type in types}>
-						<pre>${printer.printTypeDefinition(type)}</pre>
-					</for>
+					<switch ${types}>
+						<case ${Success(list)}>
+							<for ${type in list}>
+								<pre>${printer.printTypeDefinition(type)}</pre>
+							</for>
+						<case ${Failure(e)}>
+					</switch>
 				</Paper>
 			</Grid>
 		</Grid>
-		
+		</>
 	';
+	
+	override function viewDidMount() {
+		value = [for(type in initialValue) printer.printTypeDefinition(type)].join('\n');
+	}
 }

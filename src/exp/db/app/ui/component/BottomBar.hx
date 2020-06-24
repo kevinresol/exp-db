@@ -2,13 +2,13 @@ package exp.db.app.ui.component;
 
 import mui.core.*;
 import mui.core.styles.Styles.*;
-import mui.icon.Add as AddIcon;
 
 @:react.hoc(withStyles(styles))
 class BottomBar extends View {
 	@:controlled var activeTable:String;
 	@:controlled var showCustomTypeEditor:Bool;
 	@:attr var tables:PureList<String>;
+	@:attr var children:Children;
 	
 	@:react.injected var classes:{
 		bar:String,
@@ -44,9 +44,7 @@ class BottomBar extends View {
 				</for>
 			</Tabs>
 			<Toolbar variant=${Dense}>
-				<IconButton>
-					<AddIcon onClick=${_ -> {showCustomTypeEditor = true; activeTable = null;}}/>
-				</IconButton>
+				${...children}
 			</Toolbar>
 		</AppBar>
 	';

@@ -2,35 +2,31 @@ package exp.db.app;
 
 import coconut.react.*;
 import exp.db.app.ui.*;
-import exp.db.app.data.CustomTypeModel;
 import exp.db.app.data.DatabaseModel;
 import exp.db.Value;
+import exp.db.CustomType;
 import tink.state.*;
+import tink.pure.List.fromArray as list;
 
 class Main {
 	static function main() {
-		var database = new DatabaseModel();
-		database.addTable('events');
-		
-		database.customTypes.push(new CustomTypeModel({
-			name: 'Event',
-			fields: new ObservableArray([
-				new FieldModel({
+		var database = new DatabaseModel({
+			types: [new CustomType({
+				name: 'Event',
+				fields: [{
 					name: 'Combined',
-					args: new ObservableArray([
-						new ArgumentModel({
-							name: 'e1',
-							type: Custom('Event'),
-						}),
-						new ArgumentModel({
-							name: 'e2',
-							type: Custom('Event'),
-						}),
-					]),
-				}),
-			]),
-		}));
+					args: [{
+						name: 'e1',
+						type: exp.db.ValueType.Custom('Event'),
+					}, {
+						name: 'e2',
+						type: exp.db.ValueType.Custom('Event'),
+					}],
+				}],
+			})],
+		});
 		
+		database.addTable('events');
 		var table = database.tables.get('events');
 		table.columns.push({name: 'id', type: Identifier});
 		table.columns.push({name: 'title', type: Integer});
