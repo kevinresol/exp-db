@@ -23,6 +23,7 @@ typedef DataSheetProps<Value> = {
 	?onContextMenu:(event:Event, cell:Cell<Value>, row:Int, col:Int)->Void,
 	?parsePaste:(value:String)->Array<Array<String>>,
 	?isCellNavigable:(cell:Cell<Value>, row:Int, col:Int)->Bool,
+	?disablePageClick:Bool,
 	
 	?attributesRenderer:Cell<Value>->DynamicAccess<String>,
 	?sheetRenderer:ReactTypeOf<SheetRendererProps<Value>>,
@@ -103,7 +104,7 @@ typedef ValueViewerProps<Value> = {
 typedef DataEditorProps<Value> = {
 	> ValueViewerProps<Value>,
 	onChange:String->Void,
-	onCommit:(value:String, ?event:KeyboardEvent)->Void,
+	onCommit:(value:String, event:KeyboardEvent)->Void,
 	onKeyDown:KeyboardEvent->Void,
 	onRevert:Void->Void,
 }

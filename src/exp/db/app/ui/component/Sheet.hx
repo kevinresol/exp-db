@@ -17,8 +17,12 @@ enum CellValue {
 	
 // @:react.hoc(withStyles(styles))
 class Sheet extends View {
+	@:attr var tableNames:PureList<String>;
 	@:attr var columns:ObservableArray<Column>;
 	@:attr var rows:ObservableArray<ObservableMap<String, Content>>;
+	
+	@:state var showColumnAdder:Bool = false;
+	@:state var disablePageClick:Bool = false;
 	
 	@:skipCheck @:computed var header:Array<Cell<CellValue>> = {
 		var ret = [{value: Header(''), readOnly: true}];
@@ -98,12 +102,26 @@ class Sheet extends View {
 		<div class=${CONTAINER}>
 			<DataSheet
 				data=${data}
-				valueRenderer=${(cell, i, j) -> valueToString(cell.value)}
+				valueRenderer=${(cell, i, j) -> {
+					if(i == 0 && j == 0) {
+						@hxx '<button onclick=${showColumnAdder = true}>Add</button>';
+					} else {
+						valueToString(cell.value);
+					}
+				}}
+				disablePageClick=${disablePageClick}
 				dataRenderer=${(cell, i, j) -> valueToString(cell.value)}
 				onContextMenu=${onContextMenu}
 				onCellsChanged=${onCellsChanged}
 				dataEditor=${dataEditor}
 				cellRenderer=${cellRenderer}
+			/>
+			<ColumnAdder
+				open=${showColumnAdder}
+				columns=${[for(column in columns.values()) column]}
+				tables=${tableNames}
+				onCancel=${showColumnAdder = false}
+				onConfirm=${columns.push}
 			/>
 		</div>
 	';
@@ -140,7 +158,7 @@ class Sheet extends View {
 		if(additions != null) for(addition in additions) handle(addition);
 	}
 	
-	function dataEditor(props:DataEditorProps<CellValue>) {
+	function dataEditor(props:DataEditorProps<CellValue>):react.ReactComponent.ReactFragment {
 		return switch columns.get(props.col - 1) {
 			case {type: SubTable(columns)}:
 				var columns = TableModel.fromColumns(columns);
@@ -149,15 +167,22 @@ class Sheet extends View {
 					case _: null;
 				});
 				
+				disablePageClick = true;
+				
+				function commit(v, e) {
+					disablePageClick = false;
+					props.onCommit(v, e);
+				}
+				
 				@hxx '
-					<Modal open disablePortal onClose=${() -> props.onCommit(tink.Json.stringify(TableModel.toRows(rows)))}>
-						<Paper>
-							<Sheet columns=${columns} rows=${rows}/>
-						</Paper>
-					</Modal>
+					<SubTableEditor
+						onCommit=${commit}
+						columns=${columns}
+						rows=${rows}
+						tableNames=${tableNames}
+					/>
 				';
 			case _:
-				trace(props);
 				react.ReactMacro.jsx('<input class="data-editor" autoFocus ${...props} onChange=${e -> props.onChange(e.target.value)}/>');
 		}
 	}
@@ -232,4 +257,41 @@ class Sheet extends View {
 				}
 		}
 	}
+}
+
+@:react.hoc(withStyles(styles))
+class SubTableEditor extends View {
+	
+	@:attr var onCommit:(value:String, event:js.html.KeyboardEvent)->Void;
+	@:attr var tableNames:PureList<String>;
+	@:attr var columns:ObservableArray<Column>;
+	@:attr var rows:ObservableArray<ObservableMap<String, Content>>;
+	
+	@:react.injected var classes:{
+		modal:String,
+		paper:String,
+	}
+	
+	static function styles(theme) return {
+		modal: {
+			display: 'flex',
+			flexDirection: 'column',
+			justifyContent: 'center',
+			alignItems: 'center',
+		},
+		paper: {
+			maxWidth: '90%',
+			maxHeight: '90%',
+			overflowY: 'scroll',
+		},
+	}
+	
+	
+	function render() '
+		<Modal class=${classes.modal} open onClose=${() -> onCommit(tink.Json.stringify(TableModel.toRows(rows)), null)}>
+			<Paper class=${classes.paper}>
+				<Sheet ${...this}/>
+			</Paper>
+		</Modal>
+	';
 }
