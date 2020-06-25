@@ -66,32 +66,32 @@ class ValueParser {
 	}
 	 
 	public static function parseCustom(type:CustomType, e:Expr, getCustomType:String->Outcome<CustomType, Error>):Outcome<CustomValue, Error> {
+		
+		function check(ctor, numArgs, f:CustomType.Field->CustomValue) {
+			switch type.fields.first(f -> f.name == ctor) {
+				case None:
+					throw 'Field "$ctor" is not part of ${type.name}';
+				case Some(field) if(field.args.length != numArgs):
+					throw 'Expected ${field.args.length} arguments but got ${numArgs}';
+				case Some(field):
+					return f(field);
+			}
+		}
+		
 		return Error.catchExceptions(() -> switch e {
 			case macro $i{ctor}($a{args}):
-				switch type.fields.first(f -> f.name == ctor) {
-					case None:
-						throw 'Field "$ctor" is not part of ${type.name}';
-					case Some(field) if(field.args.length != args.length):
-						throw 'Expected ${field.args.length} arguments but got ${args.length}';
-					case Some(field):
-						var fargs = field.args.toArray();
-						{
-							name: ctor,
-							args: List.fromArray([for(i in 0...fargs.length)
-								parseExpr(fargs[i].type, args[i], getCustomType).sure()
-							])
-						}
-				}
+				check(ctor, args.length, field -> {
+					var fargs = field.args.toArray();
+					{
+						name: ctor,
+						args: [for(i in 0...fargs.length)
+							parseExpr(fargs[i].type, args[i], getCustomType).sure()
+						]
+					}
+				});
 				
 			case macro $i{ctor}:
-				switch type.fields.first(f -> f.name == ctor) {
-					case None:
-						throw 'Field "$ctor" is not part of ${type.name}';
-					case Some(field) if(field.args.length != 0):
-						throw 'Expected ${field.args.length} arguments but got 0';
-					case Some(field):
-						{name: ctor, args: null}
-				}
+				check(ctor, 0, field -> {name: ctor, args: null});
 				
 			case _: throw 'unsupported syntax';
 		});
