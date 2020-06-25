@@ -105,7 +105,7 @@ typedef ValueViewerProps<Value> = {
 typedef DataEditorProps<Value> = {
 	> ValueViewerProps<Value>,
 	onChange:String->Void,
-	onCommit:(value:String, event:KeyboardEvent)->Void,
+	onCommit:(value:String, event:KeyboardEvent)->Void, // FIXME: second arg should be optional: https://github.com/MVCoconut/coconut.ui/issues/68
 	onKeyDown:KeyboardEvent->Void,
 	onRevert:Void->Void,
 }

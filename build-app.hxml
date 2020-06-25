@@ -1,7 +1,7 @@
 -cp lib
 -cp src
 -main exp.db.app.Main
--js bin/app.js
+-js bin/app/app.js
 
 -lib hxnodejs
 -lib haxeparser

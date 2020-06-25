@@ -7,6 +7,7 @@ import haxe.DynamicAccess;
 import mui.core.*;
 import mui.core.styles.Styles.*;
 import DataSheet;
+import tink.Anon.merge;
 
 enum CellValue {
 	Header(v:String);
@@ -18,8 +19,12 @@ enum CellValue {
 // @:react.hoc(withStyles(styles))
 class Sheet extends View {
 	@:attr var tableNames:PureList<String>;
+	@:attr var typeNames:PureList<String>;
+	@:attr var getCustomType:String->Outcome<CustomType, Error>;
+	
 	@:attr var columns:ObservableArray<Column>;
 	@:attr var rows:ObservableArray<ObservableMap<String, Content>>;
+	@:attr var depth:Int = 0;
 	
 	@:state var showColumnAdder:Bool = false;
 	@:state var disablePageClick:Bool = false;
@@ -28,7 +33,7 @@ class Sheet extends View {
 		var ret = [{value: Header(''), readOnly: true, disableEvents: true}];
 		for(column in columns.values())
 			ret.push({
-				value: Header(column.name),
+				value: Header('${column.name} (${column.type.getName()})'),
 				readOnly: true, disableEvents: true,
 			});
 		ret;
@@ -98,7 +103,7 @@ class Sheet extends View {
 		}
 	');
 	
-	var ADD_COLUMN_BUTTON:coconut.react.RenderResult = coconut.react.Renderer.hxx('<button onclick=${showColumnAdder = true}>Add</button>');
+	var ADD_COLUMN_BUTTON:coconut.react.RenderResult = coconut.react.Renderer.hxx('<button onclick=${showColumnAdder = true}>+col</button>');
 	
 	function render() '
 		<div class=${CONTAINER}>
@@ -123,8 +128,9 @@ class Sheet extends View {
 				open=${showColumnAdder}
 				columns=${[for(column in columns.values()) column]}
 				tables=${tableNames}
+				customs=${typeNames}
 				onCancel=${showColumnAdder = false}
-				onConfirm=${columns.push}
+				onConfirm=${v -> {columns.push(v); showColumnAdder = false;}}
 			/>
 		</div>
 	';
@@ -150,8 +156,12 @@ class Sheet extends View {
 			}
 			
 			row.set(column.name, switch parseValue(column.type, v.value) {
-				case Success(v): v;
-				case Failure(e): {value: switch row.get(column.name) {case null: null; case v: v.value;}, interim: v.value}
+				case Success(v):
+					trace(v);
+					v;
+				case Failure(e):
+					trace(e);
+					{value: switch row.get(column.name) {case null: null; case v: v.value;}, interim: v.value}
 			});
 		}
 		
@@ -161,9 +171,9 @@ class Sheet extends View {
 	
 	function dataEditor(props:DataEditorProps<CellValue>):react.ReactComponent.ReactFragment {
 		return switch columns.get(props.col - 1) {
-			case {type: SubTable(columns)}:
-				var columns = TableModel.fromColumns(columns);
-				var rows = TableModel.fromRows(switch props.cell.value {
+			case column = {type: SubTable(c)}:
+				var subTableColumns = TableModel.fromColumns(c);
+				var subTableRows = TableModel.fromRows(switch props.cell.value {
 					case Value(SubTable(rows)): rows;
 					case _: null;
 				});
@@ -172,15 +182,19 @@ class Sheet extends View {
 				
 				function commit(v, e) {
 					disablePageClick = false;
+					columns.set(props.col - 1, merge(column, type = SubTable(TableModel.toColumns(subTableColumns))));
 					props.onCommit(v, e);
 				}
 				
 				@hxx '
 					<SubTableEditor
 						onCommit=${commit}
-						columns=${columns}
-						rows=${rows}
+						columns=${subTableColumns}
+						rows=${subTableRows}
+						getCustomType=${getCustomType}
 						tableNames=${tableNames}
+						typeNames=${typeNames}
+						depth=${depth + 1}
 					/>
 				';
 			case _:
@@ -211,30 +225,8 @@ class Sheet extends View {
 		');
 	}
 	
-	static function parseValue(type:ValueType, value:String):Outcome<Value, Error> {
-		return switch type {
-			case Identifier:
-				if(~/^[A-Za-z_][0-9A-Za-z_]*$/.match(value))
-					Success(Identifier(value));
-				else
-					Failure(new Error('Invalid identifier'));
-			case Integer:
-				if(~/\D/.match(value)) 
-					Failure(new Error('Invalid integer'));
-				else
-					Success(Integer(Std.parseInt(value)));
-			case Text:
-				Success(Text(value));
-			case SubTable(name):
-				// TODO: check value against table schema
-				var v = tink.Json.parse((value:PureList<Row>)).map(exp.db.Value.SubTable);
-				trace(v);
-				v;
-			case Ref(table):
-				Failure(new Error('Not implemented'));
-			case Custom(v):
-				Failure(new Error('Not implemented'));
-		}
+	function parseValue(type:ValueType, value:String):Outcome<Value, Error> {
+		return exp.db.util.ValueParser.parseRawString(type, value, getCustomType);
 	}
 	
 	static function valueToString(value:CellValue):String {
@@ -246,14 +238,7 @@ class Sheet extends View {
 			case Empty:
 				'';
 			case Value(v):
-				switch v {
-					case Identifier(v): v;
-					case Integer(v): '$v';
-					case Text(v): v;
-					case SubTable(rows): '${rows.length} row(s)...';
-					case Ref(v): v;
-					case Custom(v): null;
-				}
+				exp.db.util.ValuePrinter.print(v);
 		}
 	}
 	
@@ -267,8 +252,11 @@ class SubTableEditor extends View {
 	
 	@:attr var onCommit:(value:String, event:js.html.KeyboardEvent)->Void;
 	@:attr var tableNames:PureList<String>;
+	@:attr var typeNames:PureList<String>;
+	@:attr var getCustomType:String->Outcome<CustomType, Error>;
 	@:attr var columns:ObservableArray<Column>;
 	@:attr var rows:ObservableArray<ObservableMap<String, Content>>;
+	@:attr var depth:Int;
 	
 	@:react.injected var classes:{
 		modal:String,
@@ -279,22 +267,28 @@ class SubTableEditor extends View {
 		modal: {
 			display: 'flex',
 			flexDirection: 'column',
-			justifyContent: 'center',
 			alignItems: 'center',
 		},
 		paper: {
-			maxWidth: '90%',
-			maxHeight: '90%',
 			overflowY: 'scroll',
 		},
 	}
 	
 	
 	function render() '
-		<Modal class=${classes.modal} open onClose=${() -> onCommit(tink.Json.stringify(TableModel.toRows(rows)), null)}>
-			<Paper class=${classes.paper}>
+		<Modal class=${classes.modal} open onClose=${commit}>
+			<Paper class=${classes.paper} style=${{margin: depth * 24}}>
 				<Sheet ${...this}/>
 			</Paper>
 		</Modal>
 	';
+	
+	function commit() {
+		try {
+			var str = tink.Json.stringify(TableModel.toRows(rows));
+			onCommit(str, null);
+		} catch(e:Dynamic) {
+			trace(e);
+		}
+	}
 }

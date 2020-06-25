@@ -23,6 +23,12 @@ class Main {
 						name: 'e2',
 						type: exp.db.ValueType.Custom('Event'),
 					}],
+				}, {
+					name: 'Grow',
+					args: [{
+						name: 'value',
+						type: exp.db.ValueType.Integer,
+					}],
 				}],
 			})],
 		});

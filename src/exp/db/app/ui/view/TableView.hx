@@ -19,8 +19,15 @@ class TableView extends View {
 	// function render() '<><Sheet ${...table}/></>';
 	function render() '
 		<Paper class=${MAIN}>
-			<Sheet ${...table} tableNames=${database.tableNames}/>
+			<Sheet ${...table} tableNames=${database.tableNames} typeNames=${database.typeNames} getCustomType=${getCustomType}/>
 		</Paper>
 	';
+	
+	function getCustomType(name) {
+		return switch database.types.first(v -> v.name == name) {
+			case Some(v): Success(v);
+			case None: Failure(new Error('Type "$name" not found'));
+		}
+	}
 }
 

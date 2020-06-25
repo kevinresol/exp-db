@@ -10,8 +10,3 @@ enum Value {
 	Ref(id:String);
 	Custom(v:CustomValue);
 }
-
-typedef CustomValue = {
-	final name:String;
-	final args:List<Value>;
-}

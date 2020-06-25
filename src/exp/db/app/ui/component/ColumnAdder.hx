@@ -6,6 +6,7 @@ class ColumnAdder extends View {
 	@:attr var open:Bool;
 	@:attr var columns:PureList<Column>;
 	@:attr var tables:PureList<String>;
+	@:attr var customs:PureList<String>;
 	@:attr var onCancel:Void->Void = null;
 	@:attr var onConfirm:Column->Void;
 	
@@ -43,6 +44,7 @@ class ColumnAdder extends View {
 				<ValueTypeSelector
 					type=${type}
 					tables=${tables}
+					customs=${customs}
 				/>
 			</DialogContent>
 			<DialogActions>

@@ -7,6 +7,7 @@ class DatabaseModel implements Model {
 	@:editable var types:List<CustomType> = @byDefault null;
 	
 	@:computed var tableNames:List<String> = [for(table in tables.keys()) table];
+	@:computed var typeNames:List<String> = types.map(t -> t.name);
 	
 	public function addTable(name:String) {
 		if(!tables.exists(name)) tables.set(name, new TableModel({name: name}));

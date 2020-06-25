@@ -5,12 +5,14 @@ import exp.db.ValueType;
 
 class ValueTypeSelector extends View {
 	@:attr var tables:PureList<String>;
+	@:attr var customs:PureList<String>;
 	@:controlled var type:ValueType;
 	
 	static var list:Array<ValueType> = [
 		Identifier,
 		Integer,
 		Text,
+		SubTable(null),
 		Ref(null),
 		Custom(null),
 	];
@@ -38,6 +40,18 @@ class ValueTypeSelector extends View {
 						>
 							<for ${table in tables}>
 								<MenuItem value=${table}>${table}</MenuItem>
+							</for>
+						</Select>
+					</FormControl>
+				<case ${Custom(v)}>
+					<FormControl fullWidth margin=${Dense}>
+						<InputLabel>Type</InputLabel>
+						<Select
+							value=${v == null ? '' : v}
+							onChange=${e -> type = Custom((cast e.target).value)}
+						>
+							<for ${type in customs}>
+								<MenuItem value=${type}>${type}</MenuItem>
 							</for>
 						</Select>
 					</FormControl>

@@ -1,0 +1,16 @@
+{
+  "name": "exp-db",
+  "license": "MIT",
+  "tags": [],
+  "classPath": "src",
+  "contributors": [
+    "kevinresol"
+  ],
+  "releasenote": "initial release",
+  "version": "0.0.0",
+  "dependencies": {
+    "tink_pure": "",
+    "tink_json": "",
+    "haxeparser": ""
+  }
+}
