@@ -31,14 +31,21 @@ abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject 
 		}
 		return new CustomType({name: def.name, fields: fields});
 	}
+	
+
 	@:to public function toTypeDefintion():haxe.macro.Expr.TypeDefinition {
+		return toTypeDefintionWithPack([]);
+	}
+	
+	public function toTypeDefintionWithPack(pack:Array<String>):haxe.macro.Expr.TypeDefinition {
 		var name = this.name;
 		var def = macro class $name {};
+		def.pack = pack == null ? [] : pack;
 		def.kind = TDEnum;
 		for(field in this.fields) {
 			def.fields.push({
 				name: field.name,
-				pos: null,
+				pos: #if macro haxe.macro.Context.currentPos() #else (macro null).pos #end,
 				kind: if(field.args.length == 0)
 						FVar(null, null);
 					else

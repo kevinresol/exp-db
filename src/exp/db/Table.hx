@@ -1,9 +1,12 @@
 package exp.db;
 
-import tink.pure.*;
+import tink.pure.List;
 
-typedef Table = {
+typedef TableSchema = {
 	final name:String;
 	final columns:List<Column>;
+}
+typedef TableContent = {
+	final name:String;
 	final rows:List<Row>;
 }

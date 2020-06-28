@@ -1,0 +1,42 @@
+{
+	"tables": [
+		{
+			"columns": [
+				{ "name": "id", "type": "Identifier" },
+				{
+					"name": "sub",
+					"type": {
+						"SubTable": { "columns": [{ "name": "foo", "type": "Integer" }] }
+					}
+				},
+				{ "name": "title", "type": "Integer" },
+				{ "name": "description", "type": "Text" },
+				{ "name": "event", "type": { "Custom": { "name": "Event" } } }
+			],
+			"name": "events"
+		},
+		{
+			"columns": [
+				{ "name": "title2", "type": "Integer" },
+				{ "name": "description2", "type": "Text" },
+				{ "name": "foo", "type": "Text" }
+			],
+			"name": "foo"
+		}
+	],
+	"types": [
+		{
+			"fields": [
+				{
+					"args": [
+						{ "name": "e1", "type": { "Custom": { "name": "Event" } } },
+						{ "name": "e2", "type": { "Custom": { "name": "Event" } } }
+					],
+					"name": "Combined"
+				},
+				{ "args": [{ "name": "value", "type": "Integer" }], "name": "Grow" }
+			],
+			"name": "Event"
+		}
+	]
+}

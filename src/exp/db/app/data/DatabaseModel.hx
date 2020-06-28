@@ -81,5 +81,8 @@ abstract Content(ContentObject) from ContentObject to ContentObject {
 
 typedef ContentObject = {
 	final value:Value;
-	final interim:String;
+	final interim:{
+		final value:String;
+		final error:String;
+	};
 }

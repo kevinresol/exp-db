@@ -1,0 +1,5 @@
+tests.hxml
+-lib exp-db
+-lib travix
+-js bin/completion.js
+--no-output

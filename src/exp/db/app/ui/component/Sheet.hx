@@ -11,7 +11,7 @@ import tink.Anon.merge;
 
 enum CellValue {
 	Header(v:String);
-	Invalid(v:String);
+	Invalid(v:String, reason:String);
 	Value(v:Value);
 	Empty;
 }
@@ -53,8 +53,8 @@ class Sheet extends View {
 			for(column in columns.values())
 				row.push({
 					value: switch rows.get(r).get(column.name) {
-						case null: Invalid('');
-						case v if(v.interim != null): Invalid(v.interim);
+						case null: Invalid('', 'Empty');
+						case v if(v.interim != null): Invalid(v.interim.value, v.interim.error);
 						case v: Value(v.value);
 					}
 				});
@@ -113,11 +113,11 @@ class Sheet extends View {
 					if(i == 0 && j == 0) {
 						ADD_COLUMN_BUTTON;
 					} else {
-						valueToString(cell.value);
+						valueToString(cell.value, false);
 					}
 				}}
 				disablePageClick=${disablePageClick}
-				dataRenderer=${(cell, i, j) -> valueToString(cell.value)}
+				dataRenderer=${(cell, i, j) -> valueToString(cell.value, true)}
 				onContextMenu=${onContextMenu}
 				onCellsChanged=${onCellsChanged}
 				dataEditor=${dataEditor}
@@ -161,7 +161,7 @@ class Sheet extends View {
 					v;
 				case Failure(e):
 					trace(e);
-					{value: switch row.get(column.name) {case null: null; case v: v.value;}, interim: v.value}
+					{value: switch row.get(column.name) {case null: null; case v: v.value;}, interim: {value: v.value, error: e.data}}
 			});
 		}
 		
@@ -205,7 +205,7 @@ class Sheet extends View {
 	static function cellRenderer(props:CellRendererProps<CellValue>) {
 		var style = switch (props.cell.value:CellValue) {
 			case Header(v): null;
-			case Invalid(v): {backgroundColor: 'rgba(200, 0, 0, 0.3)'}
+			case Invalid(v, _): {backgroundColor: 'rgba(200, 0, 0, 0.3)'}
 			case Value(v): null;
 			case Empty: null;
 		}
@@ -229,12 +229,12 @@ class Sheet extends View {
 		return exp.db.util.ValueParser.parseRawString(type, value, getCustomType);
 	}
 	
-	static function valueToString(value:CellValue):String {
+	static function valueToString(value:CellValue, edit:Bool):String {
 		return switch value {
 			case Header(v):
 				v;
-			case Invalid(v):
-				v;
+			case Invalid(v, error):
+				edit ? v : '$v ($error)';
 			case Empty:
 				'';
 			case Value(v):
