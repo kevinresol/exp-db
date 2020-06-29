@@ -57,7 +57,7 @@ abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject 
 								type: switch arg.type {
 									case Integer: macro:Int;
 									case Text: macro:String;
-									case Custom(v): TPath({pack: pack, sub: v, name: module});
+									case Custom(v): TPath(module == null ? {pack: pack, name: v} : {pack: pack, sub: v, name: module});
 									case _: throw "TODO";
 								}
 							}],

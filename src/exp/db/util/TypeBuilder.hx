@@ -49,8 +49,6 @@ class TypeBuilder {
 		}
 	}
 	
-	
-	
 	final schema:DatabaseSchema;
 	final pack:Array<String>;
 	final tablePack:Array<String>;
@@ -65,7 +63,6 @@ class TypeBuilder {
 	
 	function buildDatabase() {
 		var pos = Context.currentPos();
-		
 		
 		var init = [];
 		var underlying = TPath({pack: pack, name: 'Database', sub: 'DatabaseObject'});
@@ -91,8 +88,7 @@ class TypeBuilder {
 		for(table in schema.tables) {
 			var idName = table.columns.first(c -> c.type == Identifier).map(c -> c.name);
 			var fieldName = uncapitalize(table.name);
-			var typeName = capitalize(table.name);
-			var ct = TPath({pack: tablePack, name: 'Tables', sub: typeName});
+			var ct = TPath({pack: tablePack, name: 'Tables', sub: capitalize(table.name)});
 			
 			// add field to database object
 			dbo.fields.push({
@@ -224,7 +220,6 @@ class TypeBuilder {
 			case Custom(name):
 				var parser = macro $p{typePack.concat(['Types', name + 'Parser'])};
 				macro exp.db.util.ValueParser.parseCustom($value, $parser.parse.bind(_, $db));
-			
 		}
 	}
 	

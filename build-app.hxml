@@ -8,6 +8,7 @@
 -lib coconut.react-dom
 -lib cix
 -lib tink_json
+-lib tink_core_ext
 -lib material-ui
 
 -D no-deprecation-warnings
