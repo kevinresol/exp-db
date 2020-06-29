@@ -4,6 +4,7 @@ import mui.core.*;
 import mui.icon.Icon;
 import mui.core.styles.Styles.*;
 import exp.db.ValueType;
+import haxe.macro.Expr.TypeDefinition;
 
 class CustomTypeEditor extends View {
 	
@@ -12,14 +13,14 @@ class CustomTypeEditor extends View {
 	@:attr var initialValue:PureList<CustomType>;
 	@:state var value:String = '';
 	
-	@:skipCheck @:computed var typedefs:Outcome<Array<haxe.macro.Expr.TypeDefinition>, Error> = {
+	@:skipCheck @:computed var typedefs:Outcome<Array<TypeDefinition>, Error> = {
 		Error.catchExceptions(() -> {
 			var e = new haxeparser.HaxeParser(byte.ByteData.ofString(value), '').parse();
 			e.decls.map(v -> haxeparser.DefinitionConverter.convertTypeDef([], v.decl)).filter(v -> v.kind == TDEnum);
 		});
 	}
 	
-	@:skipCheck @:computed var types:Outcome<Array<CustomType>, Error> = typedefs.map(list -> [for(def in list) (def:CustomType)]);
+	@:skipCheck @:computed var types:Outcome<Array<CustomType>, Error> = typedefs.flatMap((list:Array<TypeDefinition>) -> Error.catchExceptions(() -> [for(def in list) (def:CustomType)]));
 	
 	static final printer = new haxe.macro.Printer();
 	

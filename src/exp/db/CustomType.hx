@@ -37,7 +37,7 @@ abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject 
 		return toTypeDefintionWithPack([]);
 	}
 	
-	public function toTypeDefintionWithPack(pack:Array<String>):haxe.macro.Expr.TypeDefinition {
+	public function toTypeDefintionWithPack(pack:Array<String>, ?module:String):haxe.macro.Expr.TypeDefinition {
 		var name = this.name;
 		var def = macro class $name {};
 		def.pack = pack == null ? [] : pack;
@@ -55,8 +55,9 @@ abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject 
 							args: [for(arg in field.args) {
 								name: arg.name,
 								type: switch arg.type {
-									case Integer: TPath({pack: [], name: 'Int'});
-									case Custom(v): TPath({pack: [], name: v});
+									case Integer: macro:Int;
+									case Text: macro:String;
+									case Custom(v): TPath({pack: pack, sub: v, name: module});
 									case _: throw "TODO";
 								}
 							}],

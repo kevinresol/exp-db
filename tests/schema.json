@@ -11,7 +11,7 @@
 				},
 				{ "name": "title", "type": "Integer" },
 				{ "name": "description", "type": "Text" },
-				{ "name": "event", "type": { "Custom": { "name": "Event" } } }
+				{ "name": "e", "type": { "Custom": { "name": "Event" } } }
 			],
 			"name": "events"
 		},
@@ -37,6 +37,15 @@
 				{ "args": [{ "name": "value", "type": "Integer" }], "name": "Grow" }
 			],
 			"name": "Event"
+		},
+		{
+			"fields": [
+				{
+					"args": [{ "name": "e", "type": { "Custom": { "name": "Event" } } }],
+					"name": "E"
+				}
+			],
+			"name": "R"
 		}
 	]
 }

@@ -1,0 +1,27 @@
+{
+	"tables": [
+		{
+			"name": "events",
+			"rows": [
+				[
+					["id", { "Identifier": { "v": "id_0" } }],
+					["sub", { "SubTable": { "rows": [] } }],
+					["title", { "Integer": { "v": 0 } }],
+					["description", { "Text": { "v": "My Game" } }],
+					[
+						"e",
+						{
+							"Custom": {
+								"v": { "args": [{ "Integer": { "v": 1 } }], "name": "Grow" }
+							}
+						}
+					]
+				]
+			]
+		},
+		{
+			"name": "foo",
+			"rows": []
+		}
+	]
+}

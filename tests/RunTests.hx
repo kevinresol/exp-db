@@ -6,8 +6,12 @@ import tink.testrunner.*;
 class RunTests {
 
 	static function main() {
-		var db:foo.Database = null;
-		var e:foo.types.Event;
+		switch foo.Database.parse(sys.io.File.getContent('tests/content.json')) {
+			case Success(db):
+				trace(db.events);
+			case Failure(e):
+				trace(e);
+		}
 		
 		Runner.run(TestBatch.make([
 			new ParserTest(),
