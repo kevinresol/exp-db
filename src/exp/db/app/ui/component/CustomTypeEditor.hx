@@ -1,7 +1,7 @@
 package exp.db.app.ui.component;
 
 import mui.core.*;
-import mui.icon.Add as AddIcon;
+import mui.icon.Icon;
 import mui.core.styles.Styles.*;
 import exp.db.ValueType;
 
@@ -37,9 +37,11 @@ class CustomTypeEditor extends View {
 	function render() '
 		<>
 		<TopBar>
-			<IconButton disabled=${!types.isSuccess()} onClick=${_ -> onSubmit(types.sure())}>
-				<AddIcon/>
-			</IconButton>
+			<Tooltip title="Save Custom Types">
+				<IconButton disabled=${!types.isSuccess()} onClick=${_ -> onSubmit(types.sure())}>
+					<FontAwesomeIcon name="save"/>
+				</IconButton>
+			</Tooltip>
 		</TopBar>
 		<Grid container spacing=${Spacing_1}>
 			<Grid item xs={6}>

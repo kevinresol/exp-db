@@ -1,8 +1,6 @@
 package exp.db.app.ui.view;
 
 import mui.core.*;
-import mui.icon.Add as AddIcon;
-import mui.icon.Save as SaveIcon;
 import exp.db.app.ui.component.*;
 import exp.db.app.data.DatabaseModel;
 import exp.db.ValueType;
@@ -48,13 +46,34 @@ class DatabaseView extends View {
 				showCustomTypeEditor=${showCustomTypeEditor}
 				tables=${[for(name in database.tables.keys()) name]}
 			>
-				<IconButton>
-					<AddIcon onClick=${_ -> {showCustomTypeEditor = true; activeTable = null;}}/>
-				</IconButton>
-				<IconButton>
-					<SaveIcon onClick=${_ -> trace(tink.Json.stringify(database.toDatabase()))}/>
-				</IconButton>
+				<Tooltip title="Edit Custom Types">
+					<IconButton onClick=${_ -> {showCustomTypeEditor = true; activeTable = null;}}>
+						<FontAwesomeIcon name="book-spells"/>
+					</IconButton>
+				</Tooltip>
+				<Tooltip title="Export">
+					<IconButton onClick=${export}>
+						<FontAwesomeIcon name="download"/>
+					</IconButton>
+				</Tooltip>
 			</BottomBar>
 		</div>
 	';
-}
+	
+	function export() {
+		Promise.ofJsPromise(js.Lib.require('electron').remote.dialog.showOpenDialog({
+			properties: ['openDirectory', 'createDirectory'],
+		}))
+			.handle(function(o) switch o {
+				case Success(o):
+					if(!o.canceled) {
+						sys.io.File.saveContent(haxe.io.Path.join([o.filePaths[0], 'schema.json']), tink.Json.stringify(database.getSchema()));
+						sys.io.File.saveContent(haxe.io.Path.join([o.filePaths[0], 'content.json']), tink.Json.stringify(database.getContent()));
+						
+					}
+				case Failure(e):
+					trace(e);
+			});
+
+	}
+} 

@@ -1,6 +1,8 @@
 package exp.db.app.data;
 
 import exp.db.*;
+import exp.db.Database;
+import exp.db.Table;
 
 class DatabaseModel implements Model {
 	@:constant var tables:ObservableMap<String, TableModel> = @byDefault new ObservableMap([]);
@@ -18,6 +20,20 @@ class DatabaseModel implements Model {
 			tables: new ObservableMap([for(table in v.tables) table.name => TableModel.fromTable(table)]),
 			types: v.types,
 		});
+	}
+	
+	public function getSchema():DatabaseSchema {
+		return {
+			tables: [for(table in tables) table.getSchema()],
+			types: types,
+		}
+		
+	}
+	
+	public function getContent():DatabaseContent {
+		return {
+			tables: [for(table in tables) table.getContent()],
+		}
 	}
 	
 	public function toDatabase():Database {
@@ -48,6 +64,21 @@ class TableModel implements Model {
 			name: name,
 			columns: toColumns(columns),
 			rows: toRows(rows),
+		}
+	}
+	
+	public function getSchema():TableSchema {
+		return {
+			name: name,
+			columns: toColumns(columns),
+		}
+		
+	}
+	
+	public function getContent():TableContent {
+		return {
+			name: name,
+			rows: toRows(rows)
 		}
 	}
 	

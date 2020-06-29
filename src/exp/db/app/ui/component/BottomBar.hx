@@ -25,6 +25,7 @@ class BottomBar extends View {
 		},
 		tab: {
 			minWidth: 50,
+			textTransform: 'none',
 		},
 	}
 	
