@@ -19,7 +19,7 @@ class ValueTypeTools {
 			case Integer: Integer(0);
 			case Text: Text('');
 			case SubTable(columns): SubTable([]);
-			case Ref(table): null;
+			case Ref(table): Ref('');
 			case Custom(name): null;
 		}
 	}
