@@ -1,17 +1,22 @@
 package exp.db.app.ui;
 
 import mui.core.*;
-import exp.db.app.data.DatabaseModel;
+import exp.db.app.data.AppModel;
 import exp.db.app.ui.component.*;
 import exp.db.app.ui.view.*;
 
 class AppContainer extends View {
-	@:attr var database:DatabaseModel;
+	@:attr var app:AppModel;
 	
 	function render() '
 		<>
 			<CssBaseline />
-			<DatabaseView database=${database}/>
+			<if ${app.database != null}>
+				<DatabaseView database=${app.database}/>
+			<else>
+				<Button variant=${Contained} color=${Primary} onClick=${app.newDatabase}>New</Button>
+				<Button variant=${Contained} color=${Primary} onClick=${app.openDatabase}>Load</Button>
+			</if>
 		</>
 	';
 }

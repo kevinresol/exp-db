@@ -8,6 +8,7 @@ import exp.db.ValueType;
 class DatabaseView extends View {
 	@:attr var database:DatabaseModel;
 	
+	@:state var showTableAdder:Bool = false;
 	@:state var showCustomTypeEditor:Bool = false;
 	@:state var activeTable:String = 'events';
 	@:computed var table:TableModel = database.tables.get(activeTable);
@@ -40,12 +41,23 @@ class DatabaseView extends View {
 				<if ${table != null}>
 					<TableView database=${database} table=${table}/>
 				</if>
+				<TableAdder
+					open=${showTableAdder}
+					tables=${database.tableNames}
+					onCancel=${showTableAdder = false}
+					onConfirm=${name -> {database.addTable(name); showTableAdder = false;}}
+				/>
 			</div>
 			<BottomBar
 				activeTable=${activeTable}
 				showCustomTypeEditor=${showCustomTypeEditor}
 				tables=${[for(name in database.tables.keys()) name]}
 			>
+				<Tooltip title="New Table">
+					<IconButton onClick=${_ -> showTableAdder = true}>
+						<FontAwesomeIcon name="plus-circle"/>
+					</IconButton>
+				</Tooltip>
 				<Tooltip title="Edit Custom Types">
 					<IconButton onClick=${_ -> {showCustomTypeEditor = true; activeTable = null;}}>
 						<FontAwesomeIcon name="book-spells"/>
