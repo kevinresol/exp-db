@@ -130,7 +130,14 @@ class Sheet extends View {
 				tables=${tableNames}
 				customs=${typeNames}
 				onCancel=${showColumnAdder = false}
-				onConfirm=${v -> {columns.push(v); showColumnAdder = false;}}
+				onConfirm=${v -> {
+					columns.push(v);
+					for(i in 0...rows.length) {
+						var row = rows.get(i);
+						row.set(v.name, v.type.getDefaultValue(i));
+					}
+					showColumnAdder = false;
+				}}
 			/>
 		</div>
 	';

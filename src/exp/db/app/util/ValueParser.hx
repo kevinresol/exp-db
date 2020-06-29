@@ -17,16 +17,13 @@ class ValueParser {
 	public static function parseRawString(type:ValueType, v:String, getCustomType:String->Outcome<CustomType, Error>):Outcome<Value, Error> {
 		return Error.catchExceptions(() -> switch type {
 			case Identifier:
-				if(~/^[A-Za-z_][0-9A-Za-z_]*$/.match(v))
-					Identifier(v);
-				else
-					throw 'Invalid identifier';
+				Identifier(v);
 				
 			case Integer:
 				if(~/\D/.match(v)) 
 					throw 'Invalid integer';
 				else
-					Integer(Std.parseInt(v));
+					Integer(v.length == 0 ? 0 : Std.parseInt(v));
 				
 			case Text:
 				Text(v);
@@ -36,7 +33,8 @@ class ValueParser {
 				exp.db.Value.SubTable(tink.Json.parse(v));
 				
 			case Ref(table):
-				throw 'Not implemented';
+				 // TODO: verify the id actually exists in the target table
+				Ref(v);
 				
 			case Custom(name):
 				parseHaxeString(type, v, getCustomType).sure();
