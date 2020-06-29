@@ -1,4 +1,4 @@
+# @install: lix --silent download "gh://github.com/Simn/haxeparser#00b509e8690300ca6366aa8d0d4d97bd29fbcf2b" into haxeparser/3.3.0/github/00b509e8690300ca6366aa8d0d4d97bd29fbcf2b
 -lib hxparse
--cp ${SCOPE_DIR}/../haxeparser/src
+-cp ${HAXE_LIBCACHE}/haxeparser/3.3.0/github/00b509e8690300ca6366aa8d0d4d97bd29fbcf2b/src
 -D haxeparser=3.3.0
---macro Sys.println("haxe_libraries/haxeparser.hxml:3: [Warning] Using dev version of library haxeparser")
