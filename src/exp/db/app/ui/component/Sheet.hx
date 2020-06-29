@@ -226,7 +226,7 @@ class Sheet extends View {
 	}
 	
 	function parseValue(type:ValueType, value:String):Outcome<Value, Error> {
-		return exp.db.util.ValueParser.parseRawString(type, value, getCustomType);
+		return exp.db.app.util.ValueParser.parseRawString(type, value, getCustomType);
 	}
 	
 	static function valueToString(value:CellValue, edit:Bool):String {
@@ -238,7 +238,7 @@ class Sheet extends View {
 			case Empty:
 				'';
 			case Value(v):
-				exp.db.util.ValuePrinter.print(v);
+				exp.db.app.util.ValuePrinter.print(v);
 		}
 	}
 	

@@ -32,7 +32,7 @@ class ParserTest {
 	public function new() {}
 	
 	public function expr() {
-		return switch ValueParser.parseExpr(Custom('Event'), macro Link(1, Leaf('1')), _ -> Success(type)) {
+		return switch exp.db.app.util.ValueParser.parseExpr(Custom('Event'), macro Link(1, Leaf('1')), _ -> Success(type)) {
 			case Success(v):
 				asserts.done();
 			case Failure(e):
@@ -43,7 +43,7 @@ class ParserTest {
 	@:variant(Integer, '1', v -> v.match(Integer(1)))
 	@:variant(Text, '1', v -> v.match(Text('1')))
 	public function raw(t:ValueType, v:String, matcher:Value->Bool) {
-		return switch ValueParser.parseRawString(t, v, _ -> Success(type)) {
+		return switch exp.db.app.util.ValueParser.parseRawString(t, v, _ -> Success(type)) {
 			case Success(v):
 				asserts.assert(matcher(v));
 				asserts.done();
@@ -53,7 +53,7 @@ class ParserTest {
 	}
 	
 	public function haxe() {
-		return switch ValueParser.parseHaxeString(Custom('Event'), 'Link(1, Leaf("1"))', _ -> Success(type)) {
+		return switch exp.db.app.util.ValueParser.parseHaxeString(Custom('Event'), 'Link(1, Leaf("1"))', _ -> Success(type)) {
 			case Success(v):
 				asserts.done();
 			case Failure(e):

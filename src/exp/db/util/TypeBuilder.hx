@@ -204,41 +204,28 @@ class TypeBuilder {
 	}
 	
 	function valueParser(type:ValueType, value:Expr):Expr {
-		var pos = Context.currentPos();
-		return ESwitch(
-			value,
-			[{
-				values: [switch type {
-					case Identifier: macro Identifier(v);
-					case Integer: macro Integer(v);
-					case Text: macro Text(v);
-					case SubTable(_): macro SubTable(rows);
-					case Ref(_): macro Ref(v);
-					case Custom(_): macro Custom(v);
-				}],
-				expr: switch type {
-					case Identifier | Integer | Text:
-						macro v;
-					case SubTable(sub):
-						tableParser(sub, macro rows);
-					case Custom(name):
-						var parser = macro $p{typePack.concat(['Types', name + 'Parser'])};
-						macro $parser.parse(v);
-						
-					case _: macro throw 'TODO';
-				},
-			}, {
-				values: [macro v],
-				expr: macro throw 'unexpected value for type "' +  $v{type.getName()} + '": ' + v,
-			}],
-			null
-		).at(pos);
+		return switch type {
+			case Identifier:
+				macro exp.db.util.ValueParser.parseIdentifier($value);
+			case Integer:
+				macro exp.db.util.ValueParser.parseInteger($value);
+			case Text:
+				macro exp.db.util.ValueParser.parseText($value);
+			case SubTable(sub):
+				(macro exp.db.util.ValueParser.parseSubTable($value, rows -> ${tableParser(sub, macro rows)})).log();
+			case Ref(_):
+				macro throw "TODO";
+			case Custom(name):
+				var parser = macro $p{typePack.concat(['Types', name + 'Parser'])};
+				macro exp.db.util.ValueParser.parseCustom($value, $parser.parse);
+			
+		}
 	}
 	
 	function customValueParser(type:CustomType, value:Expr):Expr {
 		var pos = Context.currentPos();
 		var prefix = macro $p{typePack.concat(['Types', type.name])}
-		return (macro {
+		return macro {
 			var value = $value;
 			trace(Std.string(value));
 			${ESwitch(macro value.name, [
@@ -260,7 +247,7 @@ class TypeBuilder {
 					}
 				}
 			], macro throw 'unknown custom value "' + value.name + '"').at(pos)};
-		}).log();
+		};
 	}
 	
 	
