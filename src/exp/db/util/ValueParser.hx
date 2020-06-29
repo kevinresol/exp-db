@@ -3,6 +3,8 @@ package exp.db.util;
 import exp.db.*;
 import tink.pure.List;
 
+using tink.CoreApi;
+
 class ValueParser {
 	public static function parseInteger(v:Value):Int {
 		switch v {
@@ -32,7 +34,14 @@ class ValueParser {
 		}
 	}
 	
-	public static function parseCustom<T>(v:Value, f:CustomValue->T):T {
+	public static function parseRef<T>(v:Value, f:String->Lazy<T>):Lazy<T> {
+		switch v {
+			case Ref(v): return f(v);
+			case v: throw 'unexpected value for type "SubTable": $v';
+		}
+	}
+	
+	public static function parseCustom<T, Db>(v:Value, f:CustomValue->T):T {
 		switch v {
 			case Custom(v): return f(v);
 			case v: throw 'unexpected value for type "Custom": $v';

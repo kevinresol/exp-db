@@ -73,7 +73,9 @@ class TypeBuilder {
 			public static function parse(v:String):Outcome<Database, Error> {
 				return Error.catchExceptions(() -> {
 					var content:exp.db.Database.DatabaseContent = tink.Json.parse(v);
-					${EObjectDecl(init).at(pos)}
+					var db:tink.core.Ref<Database> = (null:Database);
+					db.value = ${EObjectDecl(init).at(pos)};
+					db.value;
 				});
 			}
 		}
@@ -104,7 +106,7 @@ class TypeBuilder {
 				field: fieldName,
 				expr: macro {
 					var table = content.tables.first(v -> v.name == $v{table.name}).force();
-					${tableParser(table.columns, macro table.rows)};
+					${tableParser(table.columns, macro table.rows, macro db)};
 				}
 			});
 		}
@@ -116,6 +118,7 @@ class TypeBuilder {
 			defs.push(buildCustomType(v));
 			defs.push(buildCustomParser(v));
 		}
+		
 		Context.defineModule(typePack.concat(['Types']).join('.'), defs);
 		
 		var defs = [];
@@ -123,8 +126,8 @@ class TypeBuilder {
 			defs.push(buildTable(v));
 			defs.push(buildTableParser(v));
 		}
-		Context.defineModule(tablePack.concat(['Tables']).join('.'), defs);
 		
+		Context.defineModule(tablePack.concat(['Tables']).join('.'), defs);
 		Context.defineModule(pack.concat(['Database']).join('.'), [db, dbo], [], [{pack: ['tink'], name: 'CoreApi'}]);
 	}
 	
@@ -151,11 +154,12 @@ class TypeBuilder {
 	function buildTableParser(table:TableSchema):TypeDefinition {
 		var pos = Context.currentPos();
 		var parserName = capitalize(table.name) + 'Parser';
+		var dbCt = TPath({pack: pack, name: 'Database'});
 		var tableCt = TPath({pack: tablePack, name: 'Tables', sub: capitalize(table.name)});
 		
 		var def = macro class $parserName {
-			public static function parse(rows:tink.pure.List<exp.db.Row>) {
-				return ${tableParser(table.columns, macro rows)};
+			public static function parse(rows:tink.pure.List<exp.db.Row>, db:tink.core.Ref<$dbCt>) {
+				return ${tableParser(table.columns, macro rows, macro db)};
 			}
 		}
 		
@@ -169,10 +173,11 @@ class TypeBuilder {
 	function buildCustomParser(type:CustomType):TypeDefinition {
 		var pos = Context.currentPos();
 		var parserName = type.name + 'Parser';
+		var dbCt = TPath({pack: pack, name: 'Database'});
 		var typeCt = TPath({pack: typePack, name: 'Types', sub: type.name});
 		
 		var def = macro class $parserName {
-			public static function parse(value:exp.db.CustomValue):$typeCt {
+			public static function parse<Db>(value:exp.db.CustomValue, db:tink.core.Ref<$dbCt>):$typeCt {
 				return ${customValueParser(type, macro value)}
 			}
 		}
@@ -184,10 +189,10 @@ class TypeBuilder {
 		return schema.types.first(v -> v.name == name).force();
 	}
 	
-	function tableParser(columns:List<Column>, rows:Expr):Expr {
+	function tableParser(columns:List<Column>, rows:Expr, db:Expr):Expr {
 		return macro {
 			var rows = $rows;
-			var list = [for(row in rows) ${rowParser(columns, macro row)}];
+			var list = [for(row in rows) ${rowParser(columns, macro row, db)}];
 			${switch columns.first(c -> c.type == Identifier).map(c -> c.name) {
 				case Some(id): macro [for(v in list) v.$id => v];
 				case None: macro list;
@@ -195,15 +200,15 @@ class TypeBuilder {
 		}
 	}
 	
-	function rowParser(columns:List<Column>, row:Expr):Expr {
+	function rowParser(columns:List<Column>, row:Expr, db:Expr):Expr {
 		var pos = Context.currentPos();
 		return EObjectDecl([for(column in columns) {
 			field: column.name,
-			expr: valueParser(column.type, macro $row.get($v{column.name})),
+			expr: valueParser(column.type, macro $row.get($v{column.name}), db),
 		}]).at(pos);
 	}
 	
-	function valueParser(type:ValueType, value:Expr):Expr {
+	function valueParser(type:ValueType, value:Expr, db:Expr):Expr {
 		return switch type {
 			case Identifier:
 				macro exp.db.util.ValueParser.parseIdentifier($value);
@@ -212,12 +217,13 @@ class TypeBuilder {
 			case Text:
 				macro exp.db.util.ValueParser.parseText($value);
 			case SubTable(sub):
-				(macro exp.db.util.ValueParser.parseSubTable($value, rows -> ${tableParser(sub, macro rows)})).log();
-			case Ref(_):
-				macro throw "TODO";
+				macro exp.db.util.ValueParser.parseSubTable($value, rows -> ${tableParser(sub, macro rows, db)});
+			case Ref(table):
+				var fieldName = uncapitalize(table);
+				macro exp.db.util.ValueParser.parseRef($value, id -> () -> $db.value.$fieldName[id]);
 			case Custom(name):
 				var parser = macro $p{typePack.concat(['Types', name + 'Parser'])};
-				macro exp.db.util.ValueParser.parseCustom($value, $parser.parse);
+				macro exp.db.util.ValueParser.parseCustom($value, $parser.parse.bind(_, $db));
 			
 		}
 	}
@@ -227,7 +233,6 @@ class TypeBuilder {
 		var prefix = macro $p{typePack.concat(['Types', type.name])}
 		return macro {
 			var value = $value;
-			trace(Std.string(value));
 			${ESwitch(macro value.name, [
 				for(field in type.fields) {
 					var name = field.name;
@@ -238,7 +243,7 @@ class TypeBuilder {
 						values: [macro $v{name}],
 						expr: {
 							var arr = field.args.toArray();
-							var args = [for(i in 0...arr.length) valueParser(arr[i].type, macro arr[$v{i}])];
+							var args = [for(i in 0...arr.length) valueParser(arr[i].type, macro arr[$v{i}], macro db)];
 							macro {
 								var arr = value.args.toArray();
 								$prefix.$name($a{args});
@@ -326,6 +331,7 @@ private abstract TypeRepresentation(Dynamic) {
 			else if(this == 'Text') Text;
 			else if(this.Custom != null) Custom(this.Custom.name);
 			else if(this.SubTable != null) SubTable(List.fromArray((this.SubTable.columns:Array<ColumnRepresentation>).map(TypeBuilder.parseColumnRepresentation)));
+			else if(this.Ref != null) Ref(this.Ref.table);
 			else throw 'TODO $this';
 	}
 }
