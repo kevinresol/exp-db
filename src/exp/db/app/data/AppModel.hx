@@ -1,6 +1,7 @@
 package exp.db.app.data;
 
 import tink.core.ext.Outcomes;
+import tink.core.ext.Promises;
 import exp.db.Database;
 import haxe.io.Path;
 
@@ -9,25 +10,25 @@ using tink.CoreApi;
 
 class AppModel implements Model {
 	@:observable var database:DatabaseModel = null;
+	@:observable var savePath:String = null;
 	
 	@:transition
 	function newDatabase() {
 		return {database: new DatabaseModel()}
 	}
+	
 	@:transition
 	function openDatabase() {
-		return Promise.ofJsPromise(js.Lib.require('electron').remote.dialog.showOpenDialog({properties: ['openDirectory']}))
-			.next(o -> {
-				if(!o.canceled) {
-					Outcomes.multi({
-						schema: tink.Json.parse((Path.join([o.filePaths[0], 'schema.json']).getContent():DatabaseSchema)),
-						content: tink.Json.parse((Path.join([o.filePaths[0], 'content.json']).getContent():DatabaseContent)),
-					});
-				} else {
-					Failure(new Error('cancelled'));
-				}
+		return selectDirectory()
+			.next(path -> {
+				Outcomes.multi({
+					schema: tink.Json.parse((Path.join([path, 'schema.json']).getContent():DatabaseSchema)),
+					content: tink.Json.parse((Path.join([path, 'content.json']).getContent():DatabaseContent)),
+					path: Success(path),
+				});
 			})
 			.next(data -> {
+				savePath: data.path,
 				database: DatabaseModel.fromDatabase({
 					tables: [for(table in data.schema.tables) {
 						name: table.name,
@@ -37,5 +38,20 @@ class AppModel implements Model {
 					types: data.schema.types,
 				}),
 			});
+	}
+	
+	@:transition
+	function saveDatabase() {
+		return (savePath == null ? selectDirectory() : Promise.resolve(savePath))
+			.next(path -> {
+				Path.join([path, 'schema.json']).saveContent(tink.Json.stringify(database.getSchema()));
+				Path.join([path, 'content.json']).saveContent(tink.Json.stringify(database.getContent()));
+				@patch {savePath: path}
+			});
+	}
+	
+	static function selectDirectory() {
+		return Promise.ofJsPromise(js.Lib.require('electron').remote.dialog.showOpenDialog({properties: ['openDirectory']}))
+			.next(o -> !o.canceled ? Promise.resolve(o.filePaths[0]) : new Error('cancelled'));
 	}
 }

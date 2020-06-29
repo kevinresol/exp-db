@@ -7,6 +7,7 @@ import exp.db.ValueType;
 
 class DatabaseView extends View {
 	@:attr var database:DatabaseModel;
+	@:attr var onSave:Void->Void;
 	
 	@:state var showTableAdder:Bool = false;
 	@:state var showCustomTypeEditor:Bool = false;
@@ -64,28 +65,11 @@ class DatabaseView extends View {
 					</IconButton>
 				</Tooltip>
 				<Tooltip title="Export">
-					<IconButton onClick=${export}>
+					<IconButton onClick=${onSave}>
 						<FontAwesomeIcon name="download"/>
 					</IconButton>
 				</Tooltip>
 			</BottomBar>
 		</div>
 	';
-	
-	function export() {
-		Promise.ofJsPromise(js.Lib.require('electron').remote.dialog.showOpenDialog({
-			properties: ['openDirectory', 'createDirectory'],
-		}))
-			.handle(function(o) switch o {
-				case Success(o):
-					if(!o.canceled) {
-						sys.io.File.saveContent(haxe.io.Path.join([o.filePaths[0], 'schema.json']), tink.Json.stringify(database.getSchema()));
-						sys.io.File.saveContent(haxe.io.Path.join([o.filePaths[0], 'content.json']), tink.Json.stringify(database.getContent()));
-						
-					}
-				case Failure(e):
-					trace(e);
-			});
-
-	}
 } 

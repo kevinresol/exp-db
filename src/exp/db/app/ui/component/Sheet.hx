@@ -164,10 +164,8 @@ class Sheet extends View {
 			
 			row.set(column.name, switch parseValue(column.type, v.value) {
 				case Success(v):
-					trace(v);
 					v;
 				case Failure(e):
-					trace(e);
 					{value: switch row.get(column.name) {case null: null; case v: v.value;}, interim: {value: v.value, error: e.data}}
 			});
 		}

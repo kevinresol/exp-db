@@ -12,7 +12,7 @@ class AppContainer extends View {
 		<>
 			<CssBaseline />
 			<if ${app.database != null}>
-				<DatabaseView database=${app.database}/>
+				<DatabaseView database=${app.database} onSave=${app.saveDatabase}/>
 			<else>
 				<Button variant=${Contained} color=${Primary} onClick=${app.newDatabase}>New</Button>
 				<Button variant=${Contained} color=${Primary} onClick=${app.openDatabase}>Load</Button>
