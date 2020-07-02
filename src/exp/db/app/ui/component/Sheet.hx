@@ -47,17 +47,28 @@ class Sheet extends View {
 	}
 	
 	@:skipCheck @:computed var data:Array<Array<Cell<CellValue>>> = {
+		typeNames; // make it depends on types, so this data will be re-evaluated when types changed
+		
 		var ret = [header];
 		for(r in 0...rows.length) {
 			var row:Array<Cell<CellValue>> = [{value: Header('$r'), readOnly: true, disableEvents: true}];
-			for(column in columns.values())
+			for(column in columns.values()) {
 				row.push({
 					value: switch rows.get(r).get(column.name) {
-						case null: Invalid('', 'Empty');
-						case v if(v.interim != null): Invalid(v.interim.value, v.interim.error);
-						case v: Value(v.value);
+						case null:
+							Invalid('', 'Empty');
+						case v if(v.interim != null):
+							Invalid(v.interim.value, v.interim.error);
+						case {value: null}:
+							Invalid('', 'Empty');
+						case v:
+							switch column.type.validateValue(v.value, getCustomType) {
+								case Success(_): Value(v.value);
+								case Failure(e): Invalid('', e.data == null ? e.message : Std.string(e.data));
+							}
 					}
 				});
+			}
 			ret.push(row);
 		}
 		ret.push(footer);
@@ -166,7 +177,7 @@ class Sheet extends View {
 				case Success(v):
 					v;
 				case Failure(e):
-					{value: switch row.get(column.name) {case null: null; case v: v.value;}, interim: {value: v.value, error: e.data}}
+					{value: switch row.get(column.name) {case null: null; case v: v.value;}, interim: {value: v.value, error: e.data == null ? e.message : Std.string(e.data)}}
 			});
 		}
 		
