@@ -25,6 +25,41 @@ class ValueTypeTools {
 		}
 	}
 	
+	/**
+	 * Try to convert `value` into compatible form for the given `type`
+	 */
+	public static function convertValue(type:ValueType, value:Value):Outcome<Value, Error> {
+		if(value == null) 
+			value = Text(''); // seems fine to treat null as empty string for conversion purpose
+		
+		return switch [type, value] {
+			case [Identifier, Identifier(v) | Integer('$_' => v) | Text(v) | Ref(v)]:
+				Success(Identifier(v));
+			case [Identifier, _]:
+				Success(Identifier(''));
+			case [Integer, Identifier(Std.parseInt(_) => i) | Integer(i) | Text(Std.parseInt(_) => i) | Ref(Std.parseInt(_) => i)] if(i != null):
+				Success(Integer(i));
+			case [Integer, _]:
+				Success(Integer(0));
+			case [Text, Identifier(v) | Integer('$_' => v) | Text(v) | Ref(v)]:
+				Success(Text(v));
+			case [Text, _]:
+				Success(Text(''));
+			case [SubTable(_), SubTable(v)]:
+				Success(SubTable(v));
+			case [SubTable(_), _]:
+				Success(SubTable([]));
+			case [Ref(_), Identifier(v) | Integer('$_' => v) | Text(v) | Ref(v)]:
+				Success(Ref(v));
+			case [Ref(_), _]:
+				Success(Ref(''));
+			case [Custom(_), Custom(v)]:
+				Success(Custom(v));
+			case _:
+				Failure(new Error('Cannot convert value'));
+		}
+	}
+	
 	public static function validateValue(type:ValueType, value:Value, getCustomType:String->Outcome<CustomType, Error>):Outcome<Noise, Error> {
 		return switch [type, value] {
 			case [Identifier, Identifier(_)]

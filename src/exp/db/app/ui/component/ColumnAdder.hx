@@ -9,6 +9,7 @@ class ColumnAdder extends View {
 	@:attr var customs:PureList<String>;
 	@:attr var onCancel:Void->Void = null;
 	@:attr var onConfirm:Column->Void;
+	@:attr var initial:Column = null;
 	
 	@:state var type:ValueType = Integer;
 	@:state var name:String = '';
@@ -55,7 +56,7 @@ class ColumnAdder extends View {
 					Close
 				</Button>
 				<Button disabled=${validation != None} onClick=${confirm} color=${Primary}>
-					Add
+					${initial == null ? 'Add' : 'Edit'}
 				</Button>
 			</DialogActions>
 		</Dialog>
@@ -64,6 +65,15 @@ class ColumnAdder extends View {
 	function confirm(_) {
 		onConfirm({name: name, type: type});
 		name = '';
+	}
+	
+	function viewDidMount() {
+		if(initial != null) {
+			Callback.defer(() -> {
+				name = initial.name;
+				type = initial.type;
+			});
+		}
 	}
 }
 

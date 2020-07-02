@@ -20,7 +20,7 @@ typedef DataSheetProps<Value> = {
 	?dataRenderer:(cell:Cell<Value>, row:Int, col:Int)->String,
 	?overflow:Overflow,
 	?onCellsChanged:(changes:Array<Change<Value>>, additions:Array<Addition>)->Void,
-	?onContextMenu:(event:Event, cell:Cell<Value>, row:Int, col:Int)->Void,
+	?onContextMenu:(event:MouseEvent, cell:Cell<Value>, row:Int, col:Int)->Void,
 	?parsePaste:(value:String)->Array<Array<String>>,
 	?isCellNavigable:(cell:Cell<Value>, row:Int, col:Int)->Bool,
 	?disablePageClick:Bool,
@@ -92,7 +92,7 @@ typedef CellRendererProps<Value> = {
 	onMouseOver:MouseEvent->Void,
 	onKeyUp:KeyboardEvent->Void,
 	onDoubleClick:MouseEvent->Void,
-	onContextMenu:Event->Void,
+	onContextMenu:MouseEvent->Void,
 	children:ReactSingleFragment,
 }
 typedef ValueViewerProps<Value> = {

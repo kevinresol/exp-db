@@ -15,6 +15,11 @@ enum CellValue {
 	Value(v:Value);
 	Empty;
 }
+
+@:pure
+enum ContextMenu {
+	Column(index:Int, x:Int, y:Int);
+}
 	
 // @:react.hoc(withStyles(styles))
 class Sheet extends View {
@@ -26,21 +31,24 @@ class Sheet extends View {
 	@:attr var rows:ObservableArray<ObservableMap<String, Content>>;
 	@:attr var depth:Int = 0;
 	
+	@:state var contextMenu:ContextMenu = null;
 	@:state var showColumnAdder:Bool = false;
 	@:state var disablePageClick:Bool = false;
 	
+	@:computed var columnList:PureList<Column> = [for(column in columns.values()) column];
+	
 	@:skipCheck @:computed var header:Array<Cell<CellValue>> = {
-		var ret = [{value: Header(''), readOnly: true, disableEvents: true}];
+		var ret = [{value: Header(''), readOnly: true, disableEvents: false}];
 		for(column in columns.values())
 			ret.push({
 				value: Header('${column.name} (${column.type.getName()})'),
-				readOnly: true, disableEvents: true,
+				readOnly: true, disableEvents: false,
 			});
 		ret;
 	}
 	
 	@:skipCheck @:computed var footer:Array<Cell<CellValue>> = {
-		var ret:Array<Cell<CellValue>> = [{value: Header(''), readOnly: true, disableEvents: true}];
+		var ret:Array<Cell<CellValue>> = [{value: Header(''), readOnly: true, disableEvents: false}];
 		for(column in columns.values())
 			ret.push({value: Empty});
 		ret;
@@ -51,7 +59,7 @@ class Sheet extends View {
 		
 		var ret = [header];
 		for(r in 0...rows.length) {
-			var row:Array<Cell<CellValue>> = [{value: Header('$r'), readOnly: true, disableEvents: true}];
+			var row:Array<Cell<CellValue>> = [{value: Header('$r'), readOnly: true, disableEvents: false}];
 			for(column in columns.values()) {
 				row.push({
 					value: switch rows.get(r).get(column.name) {
@@ -137,7 +145,7 @@ class Sheet extends View {
 			/>
 			<ColumnAdder
 				open=${showColumnAdder}
-				columns=${[for(column in columns.values()) column]}
+				columns=${columnList}
 				tables=${tableNames}
 				customs=${typeNames}
 				onCancel=${showColumnAdder = false}
@@ -150,11 +158,47 @@ class Sheet extends View {
 					showColumnAdder = false;
 				}}
 			/>
+			<switch ${contextMenu}>
+				<case ${null}>
+				<case ${Column(i, x, y)}>
+					<let current=${columns.get(i)}>
+						<ColumnMenu
+							x=${x}
+							y=${y}
+							column=${current}
+							columns=${columnList}
+							tables=${tableNames}
+							customs=${typeNames}
+							onClose=${contextMenu = null}
+							onDelete=${() -> {
+								if(js.Browser.window.confirm('Delete column "${current.name}"?'))
+									columns.splice(i, 1);
+								contextMenu = null;
+							}}
+							onEdit=${col -> {
+								columns.set(i, col);
+								
+								// try convert current values
+								for(row in rows.values()) {
+									var v = row.get(current.name);
+									row.remove(current.name);
+									row.set(col.name, switch col.type.convertValue(v == null ? null : v.value) {
+										case Success(v): v;
+										case Failure(e): {value: null, interim: {value: '', error: e.data == null ? e.message : Std.string(e.data)}}
+									});
+								}
+								contextMenu = null;
+							}}
+						/>
+					</let>
+			</switch>
 		</div>
 	';
 	
-	static function onContextMenu(event:js.html.Event, cell:Cell<CellValue>, row:Int, col:Int) {
-		trace(event);
+	function onContextMenu(event:js.html.MouseEvent, cell:Cell<CellValue>, row:Int, col:Int) {
+		if(row == 0 && col > 0) {
+			contextMenu = Column(col - 1, event.clientX, event.clientY);
+		}
 	}
 	
 	function onCellsChanged(changes:Array<Change<CellValue>>, additions:Array<Addition>) {
@@ -307,4 +351,37 @@ class SubTableEditor extends View {
 			trace(e);
 		}
 	}
+}
+
+class ColumnMenu extends View {
+	@:attr var x:Int;
+	@:attr var y:Int;
+	@:attr var column:Column;
+	@:attr var columns:PureList<Column>;
+	@:attr var tables:PureList<String>;
+	@:attr var customs:PureList<String>;
+	
+	@:attr var onClose:Void->Void;
+	@:attr var onDelete:Void->Void;
+	@:attr var onEdit:Column->Void;
+	
+	@:state var edit:Bool = false;
+	
+	function render() '
+		<>
+			<Menu open=${!edit} anchorReference=${AnchorPosition} anchorPosition=${{left: x, top: y}} onClose=${onClose}>
+				<MenuItem dense onClick=${onDelete}>Delete Column</MenuItem>
+				<MenuItem dense onClick=${_ -> edit = true}>Edit Column</MenuItem>
+			</Menu>
+			<ColumnAdder
+				open=${edit}
+				initial=${column}
+				columns=${columns.filter(v -> v.name != column.name)}
+				tables=${tables}
+				customs=${customs}
+				onCancel=${onClose}
+				onConfirm=${onEdit}
+			/>
+		</>
+	';
 }
