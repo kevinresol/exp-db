@@ -36,23 +36,23 @@ class ValueTypeTools {
 			case [Identifier, Identifier(v) | Integer('$_' => v) | Text(v) | Ref(v)]:
 				Success(Identifier(v));
 			case [Identifier, _]:
-				Success(Identifier(''));
+				Success(Identifier('')); // fallback default
 			case [Integer, Identifier(Std.parseInt(_) => i) | Integer(i) | Text(Std.parseInt(_) => i) | Ref(Std.parseInt(_) => i)] if(i != null):
 				Success(Integer(i));
 			case [Integer, _]:
-				Success(Integer(0));
+				Success(Integer(0)); // fallback default
 			case [Text, Identifier(v) | Integer('$_' => v) | Text(v) | Ref(v)]:
 				Success(Text(v));
 			case [Text, _]:
-				Success(Text(''));
+				Success(Text('')); // fallback default
 			case [SubTable(_), SubTable(v)]:
 				Success(SubTable(v));
 			case [SubTable(_), _]:
-				Success(SubTable([]));
+				Success(SubTable([])); // fallback default
 			case [Ref(_), Identifier(v) | Integer('$_' => v) | Text(v) | Ref(v)]:
 				Success(Ref(v));
 			case [Ref(_), _]:
-				Success(Ref(''));
+				Success(Ref('')); // fallback default
 			case [Custom(_), Custom(v)]:
 				Success(Custom(v));
 			case _:
