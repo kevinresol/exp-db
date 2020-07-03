@@ -92,8 +92,9 @@ class TypeBuilder {
 			
 			// add field to database object
 			dbo.fields.push({
+				access: [AFinal],
 				name: fieldName,
-				kind: FVar(idName != None ? macro:Map<String, $ct> : macro:Array<$ct>, null),
+				kind: FVar(idName != None ? macro:haxe.ds.ReadOnlyMap<String, $ct> : macro:haxe.ds.ReadOnlyArray<$ct>, null),
 				pos: pos,
 			});
 			
@@ -138,6 +139,7 @@ class TypeBuilder {
 		
 		for(column in table.columns) {
 			def.fields.push({
+				access: [AFinal],
 				name: column.name,
 				kind: FVar(valueTypeToComplexType(column.type, typePack), null),
 				pos: pos,
@@ -186,12 +188,13 @@ class TypeBuilder {
 	}
 	
 	function tableParser(columns:List<Column>, rows:Expr, db:Expr):Expr {
+		var rowCt = columnsToComplexType(columns, typePack);
 		return macro {
 			var rows = $rows;
-			var list = [for(row in rows) ${rowParser(columns, macro row, db)}];
+			var list = [for(row in rows) (${rowParser(columns, macro row, db)}:$rowCt)];
 			${switch columns.first(c -> c.type == Identifier).map(c -> c.name) {
-				case Some(id): macro [for(v in list) v.$id => v];
-				case None: macro list;
+				case Some(id): macro ([for(v in list) v.$id => v]:haxe.ds.ReadOnlyMap<String, $rowCt>);
+				case None: macro (list:haxe.ds.ReadOnlyArray<$rowCt>);
 			}}
 		}
 	}
@@ -262,8 +265,8 @@ class TypeBuilder {
 			case SubTable(columns):
 				var ct = columnsToComplexType(columns, pack);
 				switch columns.first(c -> c.type == Identifier) {
-					case Some(_): macro:Map<String, $ct>;
-					case None: macro:Array<$ct>;
+					case Some(_): macro:haxe.ds.ReadOnlyMap<String, $ct>;
+					case None: macro:haxe.ds.ReadOnlyArray<$ct>;
 				}
 			case Ref(table):
 				macro:Dynamic;
@@ -277,6 +280,7 @@ class TypeBuilder {
 		var ret = TAnonymous(fields);
 		for(column in columns) {
 			fields.push({
+				access: [AFinal],
 				name: column.name,
 				kind: FVar(valueTypeToComplexType(column.type, pack), null),
 				pos: Context.currentPos(),
