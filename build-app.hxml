@@ -7,9 +7,11 @@
 -lib haxeparser
 -lib coconut.react-dom
 -lib cix
+-lib electron
 -lib tink_json
 -lib tink_core_ext
 -lib material-ui
+-lib why-toast
 
 -D no-deprecation-warnings
 -D cix.embed

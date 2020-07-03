@@ -1,0 +1,3 @@
+# @install: lix --silent download "gh://github.com/why-haxe/why-toast#09e5d1683d09f77ff2fc9d17a93dd7462e089740" into why-toast/0.0.0/github/09e5d1683d09f77ff2fc9d17a93dd7462e089740
+-cp ${HAXE_LIBCACHE}/why-toast/0.0.0/github/09e5d1683d09f77ff2fc9d17a93dd7462e089740/src
+-D why-toast=0.0.0
