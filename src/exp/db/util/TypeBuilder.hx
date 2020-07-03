@@ -141,7 +141,7 @@ class TypeBuilder {
 			def.fields.push({
 				access: [AFinal],
 				name: column.name,
-				kind: FVar(valueTypeToComplexType(column.type, typePack), null),
+				kind: FVar(valueTypeToComplexType(column.type), null),
 				pos: pos,
 			});
 		}
@@ -188,7 +188,7 @@ class TypeBuilder {
 	}
 	
 	function tableParser(columns:List<Column>, rows:Expr, db:Expr):Expr {
-		var rowCt = columnsToComplexType(columns, typePack);
+		var rowCt = columnsToComplexType(columns);
 		return macro {
 			var rows = $rows;
 			var list = [for(row in rows) (${rowParser(columns, macro row, db)}:$rowCt)];
@@ -254,7 +254,7 @@ class TypeBuilder {
 	}
 	
 	
-	static function valueTypeToComplexType(type:ValueType, pack:Array<String>):ComplexType {
+	function valueTypeToComplexType(type:ValueType):ComplexType {
 		return switch type {
 			case Identifier:
 				macro:String;
@@ -263,26 +263,27 @@ class TypeBuilder {
 			case Text:
 				macro:String;
 			case SubTable(columns):
-				var ct = columnsToComplexType(columns, pack);
+				var ct = columnsToComplexType(columns);
 				switch columns.first(c -> c.type == Identifier) {
 					case Some(_): macro:haxe.ds.ReadOnlyMap<String, $ct>;
 					case None: macro:haxe.ds.ReadOnlyArray<$ct>;
 				}
 			case Ref(table):
-				macro:Dynamic;
+				var ct = TPath({pack: tablePack, name: 'Tables', sub: capitalize(table)});
+				macro:tink.core.Lazy<$ct>;
 			case Custom(name):
-				TPath({pack: pack, name: 'Types', sub: name});
+				TPath({pack: typePack, name: 'Types', sub: name});
 		}
 	}
 	
-	static function columnsToComplexType(columns:List<Column>, pack:Array<String>):ComplexType {
+	function columnsToComplexType(columns:List<Column>):ComplexType {
 		var fields = [];
 		var ret = TAnonymous(fields);
 		for(column in columns) {
 			fields.push({
 				access: [AFinal],
 				name: column.name,
-				kind: FVar(valueTypeToComplexType(column.type, pack), null),
+				kind: FVar(valueTypeToComplexType(column.type), null),
 				pos: Context.currentPos(),
 			});
 		}
