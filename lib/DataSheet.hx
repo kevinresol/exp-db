@@ -60,6 +60,7 @@ typedef Cell<Value> = {
 	value:Value,
 	?readOnly:Bool,
 	?disableEvents:Bool,
+	?disableUpdatedFlag:Bool,
 }
 
 enum abstract Overflow(String) {

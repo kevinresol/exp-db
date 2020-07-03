@@ -38,19 +38,19 @@ class Sheet extends View {
 	@:computed var columnList:PureList<Column> = [for(column in columns.values()) column];
 	
 	@:skipCheck @:computed var header:Array<Cell<CellValue>> = {
-		var ret = [{value: Header(''), readOnly: true, disableEvents: false}];
+		var ret = [{value: Header(''), readOnly: true, disableUpdatedFlag: true}];
 		for(column in columns.values())
 			ret.push({
 				value: Header('${column.name} (${column.type.getName()})'),
-				readOnly: true, disableEvents: false,
+				readOnly: true, disableUpdatedFlag: true,
 			});
 		ret;
 	}
 	
 	@:skipCheck @:computed var footer:Array<Cell<CellValue>> = {
-		var ret:Array<Cell<CellValue>> = [{value: Header(''), readOnly: true, disableEvents: false}];
+		var ret:Array<Cell<CellValue>> = [{value: Header(''), readOnly: true, disableUpdatedFlag: true}];
 		for(column in columns.values())
-			ret.push({value: Empty});
+			ret.push({value: Empty, disableUpdatedFlag: true});
 		ret;
 	}
 	
@@ -59,9 +59,10 @@ class Sheet extends View {
 		
 		var ret = [header];
 		for(r in 0...rows.length) {
-			var row:Array<Cell<CellValue>> = [{value: Header('$r'), readOnly: true, disableEvents: false}];
+			var row:Array<Cell<CellValue>> = [{value: Header('$r'), readOnly: true, disableUpdatedFlag: true}];
 			for(column in columns.values()) {
 				row.push({
+					disableUpdatedFlag: true,
 					value: switch rows.get(r).get(column.name) {
 						case null:
 							Invalid('', 'Empty');
@@ -72,7 +73,7 @@ class Sheet extends View {
 						case v:
 							switch column.type.validateValue(v.value, getCustomType) {
 								case Success(_): Value(v.value);
-								case Failure(e): Invalid('', e.data == null ? e.message : Std.string(e.data));
+								case Failure(e): Invalid(valueToString(Value(v.value), false), e.data == null ? e.message : Std.string(e.data));
 							}
 					}
 				});
@@ -128,13 +129,7 @@ class Sheet extends View {
 		<div class=${CONTAINER}>
 			<DataSheet
 				data=${data}
-				valueRenderer=${(cell, i, j) -> {
-					if(i == 0 && j == 0) {
-						ADD_COLUMN_BUTTON;
-					} else {
-						valueToString(cell.value, false);
-					}
-				}}
+				valueRenderer=${valueRenderer}
 				disablePageClick=${disablePageClick}
 				dataRenderer=${(cell, i, j) -> valueToString(cell.value, true)}
 				onContextMenu=${onContextMenu}
@@ -227,6 +222,21 @@ class Sheet extends View {
 		
 		for(change in changes) handle(change);
 		if(additions != null) for(addition in additions) handle(addition);
+	}
+	
+	var valueRendererCache = new Map();
+	function valueRenderer(cell:Cell<CellValue>, row:Int, col:Int):react.ReactComponent.ReactSingleFragment {
+		return if(row == 0 && col == 0) {
+			ADD_COLUMN_BUTTON;
+		} else switch cell.value {
+			case Invalid(value, error):
+				var key = '$value:_:$error';
+				if(!valueRendererCache.exists(key))
+					valueRendererCache[key] = hxx('<Tooltip title=${error}><div>${value}</div></Tooltip>');
+				valueRendererCache[key];
+			case _:
+				valueToString(cell.value, false);
+		}
 	}
 	
 	function dataEditor(props:DataEditorProps<CellValue>):react.ReactComponent.ReactFragment {
