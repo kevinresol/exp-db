@@ -61,7 +61,7 @@ class DatabaseView extends View {
 				</Tooltip>
 				<Tooltip title="Edit Custom Types">
 					<IconButton onClick=${_ -> {showCustomTypeEditor = true; activeTable = null;}}>
-						<FontAwesomeIcon name="book-spells"/>
+						<FontAwesomeIcon name="book"/>
 					</IconButton>
 				</Tooltip>
 				<Tooltip title="Export">
