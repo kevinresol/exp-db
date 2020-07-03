@@ -88,7 +88,7 @@ class TypeBuilder {
 		for(table in schema.tables) {
 			var idName = table.columns.first(c -> c.type == Identifier).map(c -> c.name);
 			var fieldName = uncapitalize(table.name);
-			var ct = TPath({pack: tablePack, name: 'Tables', sub: capitalize(table.name)});
+			var ct = makeTableCt(table.name);
 			
 			// add field to database object
 			dbo.fields.push({
@@ -152,8 +152,7 @@ class TypeBuilder {
 	function buildTableParser(table:TableSchema):TypeDefinition {
 		var pos = Context.currentPos();
 		var parserName = capitalize(table.name) + 'Parser';
-		var dbCt = TPath({pack: pack, name: 'Database'});
-		var tableCt = TPath({pack: tablePack, name: 'Tables', sub: capitalize(table.name)});
+		var dbCt = makeDatabaseCt();
 		
 		var def = macro class $parserName {
 			public static function parse(rows:tink.pure.List<exp.db.Row>, db:tink.core.Ref<$dbCt>) {
@@ -171,8 +170,8 @@ class TypeBuilder {
 	function buildCustomParser(type:CustomType):TypeDefinition {
 		var pos = Context.currentPos();
 		var parserName = type.name + 'Parser';
-		var dbCt = TPath({pack: pack, name: 'Database'});
-		var typeCt = TPath({pack: typePack, name: 'Types', sub: type.name});
+		var dbCt = makeDatabaseCt();
+		var typeCt = makeTypeCt(type.name);
 		
 		var def = macro class $parserName {
 			public static function parse<Db>(value:exp.db.CustomValue, db:tink.core.Ref<$dbCt>):$typeCt {
@@ -269,10 +268,10 @@ class TypeBuilder {
 					case None: macro:haxe.ds.ReadOnlyArray<$ct>;
 				}
 			case Ref(table):
-				var ct = TPath({pack: tablePack, name: 'Tables', sub: capitalize(table)});
+				var ct = makeTableCt(table);
 				macro:tink.core.Lazy<$ct>;
 			case Custom(name):
-				TPath({pack: typePack, name: 'Types', sub: name});
+				makeTypeCt(name);
 		}
 	}
 	
@@ -288,6 +287,18 @@ class TypeBuilder {
 			});
 		}
 		return ret;
+	}
+	
+	inline function makeDatabaseCt():ComplexType {
+		return TPath({pack: pack, name: 'Database'});
+	}
+	
+	inline function makeTypeCt(name:String):ComplexType {
+		return TPath({pack: typePack, name: 'Types', sub: name});
+	}
+	
+	inline function makeTableCt(name:String):ComplexType {
+		return TPath({pack: tablePack, name: 'Tables', sub: capitalize(name)});
 	}
 	
 	static function uncapitalize(v:String):String {
