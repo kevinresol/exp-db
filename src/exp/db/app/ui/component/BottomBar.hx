@@ -33,7 +33,7 @@ class BottomBar extends View {
 		<AppBar class=${classes.bar} position=${Static} color=${Default}>
 			<Tabs
 				class=${classes.tabs}
-				value=${activeTable}
+				value=${js.Syntax.code('{0} || false', activeTable)}
 				onChange=${(e, value) -> {showCustomTypeEditor = false; activeTable = value;}}
 				indicatorColor=${Primary}
 				textColor=${Primary}
