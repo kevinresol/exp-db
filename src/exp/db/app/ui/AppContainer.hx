@@ -36,7 +36,7 @@ class AppContainer extends View {
 	}
 	
 	function save() {
-		app.saveDatabase().handle(why.Toast.inst.outcome.bind(_, 'Database Saved'));
+		app.saveDatabase().handle(why.Toast.inst.outcome.bind(_, 'Database Saved', Short));
 	}
 }
 
