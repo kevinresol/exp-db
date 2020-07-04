@@ -115,9 +115,9 @@ class ValueTypeTools {
 			function check(ctor, numArgs, next:CustomType.Field->Void) {
 				switch type.fields.first(f -> f.name == ctor) {
 					case None:
-						throw 'Field "$ctor" is not part of ${type.name}';
+						throw '"$ctor" is not part of ${type.name}';
 					case Some(field) if(field.args.length != numArgs):
-						throw 'Expected ${field.args.length} arguments but got ${numArgs}';
+						throw '"$ctor" expects ${field.args.length} arguments but got ${numArgs}';
 					case Some(field):
 						next(field);
 				}
