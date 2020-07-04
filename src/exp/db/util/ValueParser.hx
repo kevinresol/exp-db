@@ -20,6 +20,13 @@ class ValueParser {
 		}
 	}
 	
+	public static function parseBoolean(v:Value):Bool {
+		switch v {
+			case Boolean(v): return v;
+			case v: throw 'unexpected value for type "Boolean": $v';
+		}
+	}
+	
 	public static function parseIdentifier(v:Value):String {
 		switch v {
 			case Identifier(v): return v;

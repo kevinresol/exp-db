@@ -6,6 +6,7 @@ import exp.db.ValueType;
 import haxe.DynamicAccess;
 import mui.core.*;
 import mui.core.styles.Styles.*;
+import mui.lab.*;
 import DataSheet;
 import tink.Anon.merge;
 
@@ -267,6 +268,33 @@ class Sheet extends View {
 						depth=${depth + 1}
 					/>
 				';
+			case {type: Boolean}:
+				var value = switch props.cell.value {
+						case Value(Boolean(v)): v;
+						case _: false;
+					}
+			
+				disablePageClick = true;
+				
+				function revert() {
+					disablePageClick = false;
+					props.onRevert();
+				}
+				
+				function commit(v:Bool) {
+					disablePageClick = false;
+					props.onCommit(v ? 'true' : 'false', null);
+				}
+				
+				@hxx '
+					<DropdownEditor
+						options=${[true, false]}
+						getOptionLabel=${v -> v ? 'true' : 'false'}
+						defaultValue=${value}
+						onRevert=${revert}
+						onCommit=${commit}
+					/>
+				';
 			case _:
 				react.ReactMacro.jsx('<input class="data-editor" autoFocus ${...props} onChange=${e -> props.onChange(e.target.value)}/>');
 		}
@@ -361,6 +389,72 @@ class SubTableEditor extends View {
 			trace(e);
 		}
 	}
+}
+
+@:react.hoc(withStyles(styles))
+class DropdownEditor<T> extends View {
+	
+	@:attr var options:PureList<T>;
+	@:attr var getOptionLabel:T->String;
+	@:attr var defaultValue:T;
+	@:attr var onCommit:T->Void;
+	@:attr var onRevert:()->Void;
+	
+	@:react.injected var classes:Dynamic;
+	
+	static function styles(theme) return {
+		root: {
+			display: 'flex',
+			padding: '0',
+			height: '100%',
+		},
+	}
+	
+	static final WRAPPER = css('
+		display: flex;
+		height: 100%;
+		flex: 1;
+	');
+	
+	// copied from: .data-grid-container .data-grid .cell > input
+	// TODO: https://github.com/back2dos/cix/issues/21
+	static final INPUT = css('
+		outline: none !important;
+		border: 2px solid rgb(33, 133, 208);
+		text-align: right;
+		height: 18px;
+		background: none;
+	');
+	
+	
+	function render() '
+		<Autocomplete
+			open
+			size=${Small}
+			classes=${classes}
+			options=${options.toArray()}
+			getOptionLabel=${getOptionLabel}
+			defaultValue=${cast defaultValue}
+			onClose=${(e, reason) -> {
+				if(reason == 'escape') onRevert();
+			}}
+			onChange=${(e, v, reason) -> {
+				if(v != null) onCommit(v);
+			}}
+			renderInput=${params -> react.ReactMacro.jsx('
+				<div ref=${params.InputProps.ref} className=${WRAPPER}>
+					<input 
+						${...params.inputProps}
+						className=${INPUT.add((cast params.inputProps).className)}
+						style=${{width: 'calc(100% - 6px)'}}
+						autoFocus
+					/>
+				</div>
+			')}
+		/>
+	';
+	
+	
 }
 
 class ColumnMenu extends View {

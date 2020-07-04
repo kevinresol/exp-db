@@ -214,6 +214,8 @@ class TypeBuilder {
 				macro exp.db.util.ValueParser.parseInteger($value);
 			case Text:
 				macro exp.db.util.ValueParser.parseText($value);
+			case Boolean:
+				macro exp.db.util.ValueParser.parseBoolean($value);
 			case SubTable(sub):
 				macro exp.db.util.ValueParser.parseSubTable($value, rows -> ${tableParser(sub, macro rows, db)});
 			case Ref(table):
@@ -261,6 +263,8 @@ class TypeBuilder {
 				macro:Int;
 			case Text:
 				macro:String;
+			case Boolean:
+				macro:Bool;
 			case SubTable(columns):
 				var ct = columnsToComplexType(columns);
 				switch columns.first(c -> c.type == Identifier) {

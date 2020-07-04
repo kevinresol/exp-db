@@ -12,6 +12,7 @@ class ValueTypeSelector extends View {
 		Identifier,
 		Integer,
 		Text,
+		Boolean,
 		SubTable(null),
 		Ref(null),
 		Custom(null),

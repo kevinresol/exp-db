@@ -6,6 +6,7 @@ class ValuePrinter {
 			case Identifier(v): v;
 			case Integer(v): '$v';
 			case Text(v): v;
+			case Boolean(v): v ? 'true' : 'false';
 			case SubTable(rows): '${rows.length} row(s)...';
 			case Ref(v): v;
 			case Custom(_): printHaxeString(value);
@@ -17,6 +18,7 @@ class ValuePrinter {
 			case Identifier(v): v;
 			case Integer(v): '$v';
 			case Text(v): '"$v"';
+			case Boolean(v): v ? 'true' : 'false';
 			case SubTable(rows): '#UNSUPPORTED';
 			case Ref(v): '.$v';
 			case Custom(v) if(v.args.length == 0): v.name;

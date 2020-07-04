@@ -28,6 +28,9 @@ class ValueParser {
 			case Text:
 				Text(v);
 				
+			case Boolean:
+				Boolean(v == '0' || v == 'false' || v == '' ? false : true);
+				
 			case SubTable(columns):
 				// TODO: check value against table schema
 				exp.db.Value.SubTable(tink.Json.parse(v));
@@ -58,6 +61,7 @@ class ValueParser {
 			case [Identifier, EConst(CIdent(v))]: Identifier(v);
 			case [Integer, EConst(CInt(v))]: Integer(Std.parseInt(v));
 			case [Text, EConst(CString(v, _))]: Text(v);
+			case [Boolean, EConst(CIdent(v = 'true' | 'false'))]: Boolean(v == 'true');
 			case [Custom(name), _]: Custom(parseCustom(getCustomType(name).sure(), expr, getCustomType).sure());
 			case _: throw 'Unsupported type or type mismatch (${type.getName()}, ${printer.printExpr(expr)})';
 		});

@@ -17,8 +17,10 @@ abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject 
 							for(arg in list) {
 								var type:ValueType = switch arg.type {
 									case TPath({pack: [], name: 'Int'}): Integer;
+									case TPath({pack: [], name: 'String'}): Text;
+									case TPath({pack: [], name: 'Bool'}): Boolean;
 									case TPath({pack: [], name: name}): Custom(name);
-									case v: throw 'unsupported ComplexType: ' + new haxe.macro.Printer().printComplexType(v);
+									case v: throw 'Unsupported ComplexType: ' + new haxe.macro.Printer().printComplexType(v);
 								}
 								args.push({name: arg.name, type: type});
 							}
@@ -57,6 +59,7 @@ abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject 
 								type: switch arg.type {
 									case Integer: macro:Int;
 									case Text: macro:String;
+									case Boolean: macro:Bool;
 									case Custom(v): TPath(module == null ? {pack: pack, name: v} : {pack: pack, sub: v, name: module});
 									case _: throw "TODO";
 								}

@@ -8,6 +8,7 @@ enum ValueType {
 	Identifier;
 	Integer;
 	Text;
+	Boolean;
 	SubTable(columns:List<Column>);
 	Ref(table:String);
 	Custom(name:String);
@@ -19,6 +20,7 @@ class ValueTypeTools {
 			case Identifier: Identifier('id_$rowNumber');
 			case Integer: Integer(0);
 			case Text: Text('');
+			case Boolean: Boolean(true);
 			case SubTable(columns): SubTable([]);
 			case Ref(table): Ref('');
 			case Custom(name): null;
@@ -45,6 +47,10 @@ class ValueTypeTools {
 				Success(Text(v));
 			case [Text, _]:
 				Success(Text('')); // fallback default
+			case [Boolean, Identifier(_.length > 0 => v) | Integer(_ != 0 => v) | Text(_.length > 0 => v) | Ref(_.length > 0 => v)]:
+				Success(Boolean(v));
+			case [Boolean, _]:
+				Success(Boolean(true)); // fallback default
 			case [SubTable(_), SubTable(v)]:
 				Success(SubTable(v));
 			case [SubTable(_), _]:
@@ -65,6 +71,7 @@ class ValueTypeTools {
 			case [Identifier, Identifier(_)]
 			| [Integer, Integer(_)]
 			| [Text, Text(_)]
+			| [Boolean, Boolean(_)]
 			| [SubTable(_), SubTable(_)]
 			| [Ref(_), Ref(_)]: Success(Noise);
 			case [Custom(name), Custom(cvalue)]:
