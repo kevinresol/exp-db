@@ -46,7 +46,7 @@ class Electron {
 		});
 
 		App.on(window_all_closed, function(e) {
-			if( Node.process.platform != 'darwin' ) App.quit();
+			App.quit();
 		});
 		
 	}
