@@ -11,7 +11,7 @@ class DatabaseView extends View {
 	
 	@:state var showTableAdder:Bool = false;
 	@:state var showCustomTypeEditor:Bool = false;
-	@:state var activeTable:String = 'events';
+	@:state var activeTable:String = null;
 	@:computed var table:TableModel = database.tables.get(activeTable);
 	
 	static final ROOT = css('
@@ -72,4 +72,8 @@ class DatabaseView extends View {
 			</BottomBar>
 		</div>
 	';
+	
+	override function viewDidMount() {
+		activeTable = database.tableNames.first().orNull();
+	}
 } 
