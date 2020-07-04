@@ -37,27 +37,37 @@ class ValueTypeTools {
 			value = Text(''); // seems fine to treat null as empty string for conversion purpose
 		
 		return switch [type, value] {
-			case [Identifier, Identifier(v) | Integer('$_' => v) | Text(v) | Ref(v)]:
+			case [Identifier, Identifier(v) | Integer('$_' => v) | Text(v) | Boolean((_ ? 'true' : 'false') => v) | Enumeration(v) | Ref(v)]:
 				Success(Identifier(v));
 			case [Identifier, _]:
 				Success(Identifier('')); // fallback default
-			case [Integer, Identifier(Std.parseInt(_) => i) | Integer(i) | Text(Std.parseInt(_) => i) | Ref(Std.parseInt(_) => i)] if(i != null):
+				
+			case [Integer, Identifier(Std.parseInt(_) => i) | Integer(i) | Text(Std.parseInt(_) => i) | Boolean((_ ? 0 : 1) => i) | Ref(Std.parseInt(_) => i)] if(i != null):
 				Success(Integer(i));
 			case [Integer, _]:
 				Success(Integer(0)); // fallback default
-			case [Text, Identifier(v) | Integer('$_' => v) | Text(v) | Ref(v)]:
+				
+			case [Text, Identifier(v) | Integer('$_' => v) | Text(v) | Boolean((_ ? 'true' : 'false') => v) | Enumeration(v) | Ref(v)]:
 				Success(Text(v));
 			case [Text, _]:
 				Success(Text('')); // fallback default
-			case [Boolean, Identifier(_.length > 0 => v) | Integer(_ != 0 => v) | Text(_.length > 0 => v) | Ref(_.length > 0 => v)]:
+				
+			case [Boolean, Identifier(_.length > 0 => v) | Integer(_ != 0 => v) | Text(_.length > 0 => v) | Boolean(v) | Ref(_.length > 0 => v)]:
 				Success(Boolean(v));
 			case [Boolean, _]:
 				Success(Boolean(true)); // fallback default
+				
+			case [Enumeration(list), Identifier(v) | Integer('$_' => v) | Text(v) | Boolean((_ ? 'true' : 'false') => v) | Enumeration(v) | Ref(v)] if(list.exists(i -> i == v)):
+				Success(Enumeration(v));
+			case [Enumeration(list), _]:
+				Success(Enumeration(list.first().orNull())); // fallback default
+				
 			case [SubTable(_), SubTable(v)]:
 				Success(SubTable(v));
 			case [SubTable(_), _]:
 				Success(SubTable([])); // fallback default
-			case [Ref(_), Identifier(v) | Integer('$_' => v) | Text(v) | Ref(v)]:
+				
+			case [Ref(_), Identifier(v) | Integer('$_' => v) | Text(v) | Boolean((_ ? 'true' : 'false') => v) | Enumeration(v) | Ref(v)]:
 				Success(Ref(v));
 			case [Ref(_), _]:
 				Success(Ref('')); // fallback default
