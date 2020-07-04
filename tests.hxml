@@ -2,6 +2,7 @@
 -main RunTests
 -dce full
 
+-lib haxeparser
 -lib tink_unittest
 
 -D analyzer-optimize
