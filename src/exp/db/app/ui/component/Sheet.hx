@@ -187,8 +187,10 @@ class Sheet extends View {
 							customs=${typeNames}
 							onClose=${contextMenu = null}
 							onDelete=${() -> {
-								if(js.Browser.window.confirm('Delete column "${current.name}"?'))
+								if(js.Browser.window.confirm('Delete column "${current.name}"?')) {
 									columns.splice(i, 1);
+									for(row in rows.values()) row.remove(current.name);
+								}
 								contextMenu = null;
 							}}
 							onEdit=${col -> {
@@ -537,7 +539,6 @@ class RowMenu extends View {
 	
 	@:attr var onClose:Void->Void;
 	@:attr var onDelete:Void->Void;
-
 	
 	function render() '
 		<>
