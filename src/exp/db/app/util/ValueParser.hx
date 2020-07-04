@@ -31,6 +31,12 @@ class ValueParser {
 			case Boolean:
 				Boolean(v == '0' || v == 'false' || v == '' ? false : true);
 				
+			case Enumeration(list):
+				if(list.exists(i -> i == v)) 
+					Enumeration(v);
+				else
+					throw 'Invalid Value "$v". Expected ' + list.toArray().join(', ');
+				
 			case SubTable(columns):
 				// TODO: check value against table schema
 				exp.db.Value.SubTable(tink.Json.parse(v));

@@ -295,6 +295,34 @@ class Sheet extends View {
 						onCommit=${commit}
 					/>
 				';
+				
+			case {type: Enumeration(list)}:
+				var value = switch props.cell.value {
+						case Value(Enumeration(v)): v;
+						case _: list.first().orNull();
+					}
+			
+				disablePageClick = true;
+				
+				function revert() {
+					disablePageClick = false;
+					props.onRevert();
+				}
+				
+				function commit(v:String) {
+					disablePageClick = false;
+					props.onCommit(v, null);
+				}
+				
+				@hxx '
+					<DropdownEditor
+						options=${list.toArray()}
+						getOptionLabel=${v -> v}
+						defaultValue=${value}
+						onRevert=${revert}
+						onCommit=${commit}
+					/>
+				';
 			case _:
 				react.ReactMacro.jsx('<input class="data-editor" autoFocus ${...props} onChange=${e -> props.onChange(e.target.value)}/>');
 		}

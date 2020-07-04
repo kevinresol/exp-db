@@ -9,6 +9,7 @@ enum ValueType {
 	Integer;
 	Text;
 	Boolean;
+	Enumeration(list:List<String>);
 	SubTable(columns:List<Column>);
 	Ref(table:String);
 	Custom(name:String);
@@ -21,6 +22,7 @@ class ValueTypeTools {
 			case Integer: Integer(0);
 			case Text: Text('');
 			case Boolean: Boolean(true);
+			case Enumeration(list): Enumeration(list.first().orNull());
 			case SubTable(columns): SubTable([]);
 			case Ref(table): Ref('');
 			case Custom(name): null;
@@ -73,7 +75,15 @@ class ValueTypeTools {
 			| [Text, Text(_)]
 			| [Boolean, Boolean(_)]
 			| [SubTable(_), SubTable(_)]
-			| [Ref(_), Ref(_)]: Success(Noise);
+			| [Ref(_), Ref(_)]:
+				Success(Noise);
+			
+			case [Enumeration(list), Enumeration(v)]:
+				if(list.exists(i -> i == v)) 
+					Success(Noise);
+				else
+					Failure(new Error('Invalid value: "$v". Expected ${list.toArray().join(', ')}'));
+				
 			case [Custom(name), Custom(cvalue)]:
 				switch getCustomType(name) {
 					case Success(ctype):
@@ -81,6 +91,7 @@ class ValueTypeTools {
 					case Failure(e):
 						Failure(e);
 				}
+				
 			case _:
 				Failure(new Error('Got ${value.getName()} but expected ${type.getName()}'));
 		}

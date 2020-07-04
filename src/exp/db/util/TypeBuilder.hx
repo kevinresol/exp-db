@@ -207,6 +207,7 @@ class TypeBuilder {
 	}
 	
 	function valueParser(type:ValueType, value:Expr, db:Expr):Expr {
+		var pos = Context.currentPos();
 		return switch type {
 			case Identifier:
 				macro exp.db.util.ValueParser.parseIdentifier($value);
@@ -216,6 +217,10 @@ class TypeBuilder {
 				macro exp.db.util.ValueParser.parseText($value);
 			case Boolean:
 				macro exp.db.util.ValueParser.parseBoolean($value);
+			case Enumeration(list):
+				var expected = list.toArray().join(', ');
+				var expr = ESwitch(macro str, [{values: [for(item in list) macro $v{item}], expr: macro cast str}], macro throw 'Unknown value "' + str + '". Expected ' + $v{expected}).at(pos);
+				macro exp.db.util.ValueParser.parseEnumeration($value, str -> $expr);
 			case SubTable(sub):
 				macro exp.db.util.ValueParser.parseSubTable($value, rows -> ${tableParser(sub, macro rows, db)});
 			case Ref(table):
@@ -265,6 +270,8 @@ class TypeBuilder {
 				macro:String;
 			case Boolean:
 				macro:Bool;
+			case Enumeration(list):
+				TPath({pack: ['enums'], name: 'Enums', params: [for(v in list) TPExpr(macro $v{v})]});
 			case SubTable(columns):
 				var ct = columnsToComplexType(columns);
 				switch columns.first(c -> c.type == Identifier) {
@@ -344,6 +351,8 @@ private abstract TypeRepresentation(Dynamic) {
 			if(this == 'Identifier') Identifier;
 			else if(this == 'Integer') Integer;
 			else if(this == 'Text') Text;
+			else if(this == 'Boolean') Boolean;
+			else if(this.Enumeration != null) Enumeration((this.Enumeration.list:Array<String>));
 			else if(this.Custom != null) Custom(this.Custom.name);
 			else if(this.SubTable != null) SubTable(List.fromArray((this.SubTable.columns:Array<ColumnRepresentation>).map(TypeBuilder.parseColumnRepresentation)));
 			else if(this.Ref != null) Ref(this.Ref.table);

@@ -27,6 +27,13 @@ class ValueParser {
 		}
 	}
 	
+	public static function parseEnumeration<T>(v:Value, f:String->T):T {
+		switch v {
+			case Enumeration(v): return f(v);
+			case v: throw 'unexpected value for type "Boolean": $v';
+		}
+	}
+	
 	public static function parseIdentifier(v:Value):String {
 		switch v {
 			case Identifier(v): return v;

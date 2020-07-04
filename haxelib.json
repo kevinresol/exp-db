@@ -9,6 +9,7 @@
   "releasenote": "initial release",
   "version": "0.0.0",
   "dependencies": {
+    "quick-enums": "",
     "tink_pure": "",
     "tink_json": ""
   }

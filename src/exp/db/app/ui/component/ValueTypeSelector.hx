@@ -13,6 +13,7 @@ class ValueTypeSelector extends View {
 		Integer,
 		Text,
 		Boolean,
+		Enumeration(null),
 		SubTable(null),
 		Ref(null),
 		Custom(null),
@@ -32,6 +33,19 @@ class ValueTypeSelector extends View {
 				</Select>
 			</FormControl>
 			<switch ${type}>
+				<case ${Enumeration(list)}>
+					<TextField
+						autoFocus
+						fullWidth
+						margin=${Dense}
+						label="List"
+						value=${list.toArray().join(',')}
+						onChange=${e -> {
+							var str:String = (cast e.target).value;
+							type = Enumeration(str.split(',').map(StringTools.trim));
+							Renderer.updateAll();
+						}}
+					/>
 				<case ${Ref(v)}>
 					<FormControl fullWidth margin=${Dense}>
 						<InputLabel>Table</InputLabel>

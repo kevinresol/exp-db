@@ -7,11 +7,17 @@ class RunTests {
 	static function main() {
 		switch foo.Database.parse(sys.io.File.getContent('tests/content.json')) {
 			case Success(db):
-				switch db.events['id_0'].e {
+				var event = db.events['id_0'];
+				switch event.e {
 					case Grow(v): trace('grow $v');
 					case Combined(e1, e2): trace('combined, $e1, $e2');
 				}
-				trace(db.events['id_0'].r.get());
+				switch event.enm {
+					case Aa: trace('a');
+					case Bb: trace('b');
+					case Cc: trace('c');
+				}
+				trace(event.r.get());
 			case Failure(e):
 				trace(e);
 		}

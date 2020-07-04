@@ -1,7 +1,7 @@
 package exp.db.app.ui.component;
 
 import mui.core.*;
-
+using StringTools;
 class ColumnAdder extends View {
 	@:attr var open:Bool;
 	@:attr var columns:PureList<Column>;
@@ -14,6 +14,8 @@ class ColumnAdder extends View {
 	@:state var type:ValueType = Integer;
 	@:state var name:String = '';
 	
+	static final ENUMERATION_REGEX = ~/^[A-Z][A-Za-z0-9_]*$/;
+	
 	@:computed var validation:Option<Error> = {
 		if(name.length == 0) {
 			Some(new Error('Please input name'));
@@ -22,6 +24,17 @@ class ColumnAdder extends View {
 		} else switch type {
 			case Ref(null):
 				Some(new Error('Please select a referenced table'));
+			case Enumeration(list):
+				if(list.length == 0)
+					Some(new Error('Please input a list of enumeration'));
+				else if(list.exists(v -> v == ''))
+					Some(new Error('Empty enumeration entry'));
+				else if(list.exists(v -> !ENUMERATION_REGEX.match(v)))
+					Some(new Error('Invalid enumeration entry'));
+				else if(hasDuplicate(list))
+					Some(new Error('Duplicated enumeration entry'));
+				else
+					None;
 			case Custom(null):
 				Some(new Error('Please select a custom type'));
 			case Identifier if(columns.exists(v -> v.type == Identifier)):
@@ -39,7 +52,10 @@ class ColumnAdder extends View {
 					margin=${Dense}
 					label="Name"
 					value=${name}
-					onChange=${e -> name = (cast e.target).value}
+					onChange=${e -> {
+						name = (cast e.target).value;
+						Renderer.updateAll();
+					}}
 					fullWidth
 				/>
 				<ValueTypeSelector
@@ -74,6 +90,12 @@ class ColumnAdder extends View {
 				type = initial.type;
 			});
 		}
+	}
+	
+	static function hasDuplicate(list:PureList<String>) {
+		var map = new Map();
+		for(v in list) if(map.exists(v)) return true else map[v] = true;
+		return false;
 	}
 }
 
