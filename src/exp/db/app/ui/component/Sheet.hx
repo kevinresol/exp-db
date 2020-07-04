@@ -20,6 +20,7 @@ enum CellValue {
 @:pure
 enum ContextMenu {
 	Column(index:Int, x:Int, y:Int);
+	Row(index:Int, x:Int, y:Int);
 }
 	
 // @:react.hoc(withStyles(styles))
@@ -212,6 +213,17 @@ class Sheet extends View {
 							}}
 						/>
 					</let>
+				<case ${Row(i, x, y)}>
+					<RowMenu
+						x=${x}
+						y=${y}
+						onClose=${contextMenu = null}
+						onDelete=${() -> {
+							if(js.Browser.window.confirm('Delete row $i?'))
+								rows.splice(i, 1);
+							contextMenu = null;
+						}}
+					/>
 			</switch>
 		</div>
 	';
@@ -219,6 +231,9 @@ class Sheet extends View {
 	function onContextMenu(event:js.html.MouseEvent, cell:Cell<CellValue>, row:Int, col:Int) {
 		if(row == 0 && col > 0) {
 			contextMenu = Column(col - 1, event.clientX, event.clientY);
+		}
+		if(row > 0 && col == 0) {
+			contextMenu = Row(row - 1, event.clientX, event.clientY);
 		}
 	}
 	
@@ -512,6 +527,23 @@ class ColumnMenu extends View {
 				onCancel=${onClose}
 				onConfirm=${onEdit}
 			/>
+		</>
+	';
+}
+
+class RowMenu extends View {
+	@:attr var x:Int;
+	@:attr var y:Int;
+	
+	@:attr var onClose:Void->Void;
+	@:attr var onDelete:Void->Void;
+
+	
+	function render() '
+		<>
+			<Menu open anchorReference=${AnchorPosition} anchorPosition=${{left: x, top: y}} onClose=${onClose}>
+				<MenuItem dense onClick=${onDelete}>Delete Row</MenuItem>
+			</Menu>
 		</>
 	';
 }
