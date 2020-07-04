@@ -44,8 +44,8 @@ class AppModel implements Model {
 	function saveDatabase() {
 		return (savePath == null ? selectDirectory() : Promise.resolve(savePath))
 			.next(path -> {
-				Path.join([path, 'schema.json']).saveContent(tink.Json.stringify(database.getSchema()));
-				Path.join([path, 'content.json']).saveContent(tink.Json.stringify(database.getContent()));
+				Path.join([path, 'schema.json']).saveContent(formatJson(tink.Json.stringify(database.getSchema())));
+				Path.join([path, 'content.json']).saveContent(formatJson(tink.Json.stringify(database.getContent())));
 				@patch {savePath: path}
 			});
 	}
@@ -53,5 +53,9 @@ class AppModel implements Model {
 	static function selectDirectory() {
 		return Promise.ofJsPromise(js.Lib.require('electron').remote.dialog.showOpenDialog({properties: ['openDirectory']}))
 			.next(o -> !o.canceled ? Promise.resolve(o.filePaths[0]) : new Error('cancelled'));
+	}
+	
+	static function formatJson(json:String):String {
+		return js.Lib.require('prettier').format(json, {parser: 'json'});
 	}
 }
