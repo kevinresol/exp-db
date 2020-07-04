@@ -10,7 +10,6 @@
   "version": "0.0.0",
   "dependencies": {
     "tink_pure": "",
-    "tink_json": "",
-    "haxeparser": ""
+    "tink_json": ""
   }
 }
