@@ -203,9 +203,9 @@ class Sheet extends View {
 			var r = v.row - 1; // minus header offset
 			
 			var column = columns.get(c);
-			var row = switch rows.get(r) { // minus header offset
+			var row = switch rows.get(r) {
 				case null:
-					var row = new ObservableMap([]);
+					var row = new ObservableMap([for(column in columns.values()) column.name => (column.type.getDefaultValue(r):Content)]);
 					rows.set(r, row);
 					row;
 				case row:
