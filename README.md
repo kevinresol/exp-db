@@ -9,6 +9,10 @@
 - `yarn`
 - `electron .`
 
+## Demo
+
+Some demo video clips can be found here: https://twitter.com/kevinresol/status/1278713601004453888
+
 ## Custom Types
 
 Custom types are edited in Haxe enum syntax.
