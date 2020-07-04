@@ -31,6 +31,7 @@ class ValueTypeTools {
 	
 	/**
 	 * Try to convert `value` into compatible form for the given `type`
+	 * Mainly for use when column type is changed
 	 */
 	public static function convertValue(type:ValueType, value:Value):Outcome<Value, Error> {
 		if(value == null) 
@@ -71,8 +72,10 @@ class ValueTypeTools {
 				Success(Ref(v));
 			case [Ref(_), _]:
 				Success(Ref('')); // fallback default
+				
 			case [Custom(_), Custom(v)]:
 				Success(Custom(v));
+				
 			case _:
 				Failure(new Error('Cannot convert value'));
 		}

@@ -74,7 +74,7 @@ class Sheet extends View {
 						case v:
 							switch column.type.validateValue(v.value, getCustomType) {
 								case Success(_): Value(v.value);
-								case Failure(e): Invalid(valueToString(Value(v.value), false), e.data == null ? e.message : Std.string(e.data));
+								case Failure(e): Invalid(valueToString(Value(v.value)), e.data == null ? e.message : Std.string(e.data));
 							}
 					}
 				});
@@ -132,7 +132,7 @@ class Sheet extends View {
 				data=${data}
 				valueRenderer=${valueRenderer}
 				disablePageClick=${disablePageClick}
-				dataRenderer=${(cell, i, j) -> valueToString(cell.value, true)}
+				dataRenderer=${(cell, i, j) -> valueToString(cell.value)}
 				onContextMenu=${onContextMenu}
 				onCellsChanged=${onCellsChanged}
 				dataEditor=${dataEditor}
@@ -180,7 +180,13 @@ class Sheet extends View {
 									row.remove(current.name);
 									row.set(col.name, switch col.type.convertValue(v == null ? null : v.value) {
 										case Success(v): v;
-										case Failure(e): {value: null, interim: {value: '', error: e.data == null ? e.message : Std.string(e.data)}}
+										case Failure(e): {
+											value: null,
+											interim: {
+												value: v == null || v.value == null ? '' : valueToString(Value(v.value)),
+												error: e.data == null ? e.message : Std.string(e.data)
+											}
+										}
 									});
 								}
 								contextMenu = null;
@@ -236,7 +242,7 @@ class Sheet extends View {
 					valueRendererCache[key] = hxx('<Tooltip title=${error}><div>${value}</div></Tooltip>');
 				valueRendererCache[key];
 			case _:
-				valueToString(cell.value, false);
+				valueToString(cell.value);
 		}
 	}
 	
@@ -355,12 +361,10 @@ class Sheet extends View {
 		return exp.db.app.util.ValueParser.parseRawString(type, value, getCustomType);
 	}
 	
-	static function valueToString(value:CellValue, edit:Bool):String {
+	static function valueToString(value:CellValue):String {
 		return switch value {
-			case Header(v):
+			case Header(v) | Invalid(v, _):
 				v;
-			case Invalid(v, error):
-				edit ? v : '$v ($error)';
 			case Empty:
 				'';
 			case Value(v):
