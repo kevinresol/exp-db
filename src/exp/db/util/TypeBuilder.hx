@@ -13,11 +13,11 @@ using sys.io.File;
 
 @:allow(exp.db.util)
 class TypeBuilder {
-	public static function build(file:String, pack:Array<String>) {
+	public static function build(file:String, pack:String) {
 		var path = Context.resolvePath(file);
 		var rep = Json.parse(path.getContent());
 		var schema = parseDatabaseRepresentation(rep);
-		new TypeBuilder(schema, pack).buildDatabase();
+		new TypeBuilder(schema, pack.split('.')).buildDatabase();
 	}
 	
 	static function parseDatabaseRepresentation(v:DatabaseRepresentation):DatabaseSchema {

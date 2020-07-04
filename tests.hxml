@@ -6,4 +6,4 @@
 -lib tink_unittest
 
 -D analyzer-optimize
---macro exp.db.util.TypeBuilder.build('schema.json', ['foo'])
+--macro exp.db.util.TypeBuilder.build('schema.json', 'foo.data')

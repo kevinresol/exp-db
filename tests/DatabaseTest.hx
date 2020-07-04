@@ -1,8 +1,8 @@
 package;
 
-import foo.Database;
-import foo.tables.Tables;
-import foo.types.Types;
+import foo.data.Database;
+import foo.data.tables.Tables;
+import foo.data.types.Types;
 
 using tink.CoreApi;
 
