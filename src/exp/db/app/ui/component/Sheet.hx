@@ -62,9 +62,11 @@ class Sheet extends View {
 		for(r in 0...rows.length) {
 			var row:Array<Cell<CellValue>> = [{value: Header('$r'), readOnly: true, disableUpdatedFlag: true}];
 			for(column in columns.values()) {
+				var content = rows.get(r).get(column.name);
+				
 				row.push({
 					disableUpdatedFlag: true,
-					value: switch rows.get(r).get(column.name) {
+					value: switch content {
 						case null:
 							Invalid('', 'Empty');
 						case v if(v.interim != null):
@@ -76,7 +78,24 @@ class Sheet extends View {
 								case Success(_): Value(v.value);
 								case Failure(e): Invalid(valueToString(Value(v.value)), e.data == null ? e.message : Std.string(e.data));
 							}
-					}
+					},
+					component: switch content {
+						case null | {value: null}: null;
+						case {value: Boolean(v)}: hxx('
+							<Switch
+								checked=${v}
+								size=${Small}
+								color=${Primary}
+								onChange=${e -> rows.get(r).set(column.name, exp.db.Value.Boolean((cast e.target).checked))}
+							/>
+						');
+						case _: null;
+					},
+					forceComponent: switch content {
+						case null | {value: null}: false;
+						case {value: Boolean(_)}: true;
+						case _: false;
+					},
 				});
 			}
 			ret.push(row);
@@ -275,32 +294,7 @@ class Sheet extends View {
 					/>
 				';
 			case {type: Boolean}:
-				var value = switch props.cell.value {
-						case Value(Boolean(v)): v;
-						case _: false;
-					}
-			
-				disablePageClick = true;
-				
-				function revert() {
-					disablePageClick = false;
-					props.onRevert();
-				}
-				
-				function commit(v:Bool) {
-					disablePageClick = false;
-					props.onCommit(v ? 'true' : 'false', null);
-				}
-				
-				@hxx '
-					<DropdownEditor
-						options=${[true, false]}
-						getOptionLabel=${v -> v ? 'true' : 'false'}
-						defaultValue=${value}
-						onRevert=${revert}
-						onCommit=${commit}
-					/>
-				';
+				null; // unreachable because a Switch is always rendered
 				
 			case {type: Enumeration(list)}:
 				var value = switch props.cell.value {

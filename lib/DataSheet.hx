@@ -61,6 +61,8 @@ typedef Cell<Value> = {
 	?readOnly:Bool,
 	?disableEvents:Bool,
 	?disableUpdatedFlag:Bool,
+	?component:ReactSingleFragment,
+	?forceComponent:Bool,
 }
 
 enum abstract Overflow(String) {
