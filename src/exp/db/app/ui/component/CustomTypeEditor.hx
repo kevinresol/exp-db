@@ -75,6 +75,7 @@ class CustomTypeEditor extends View {
 	';
 	
 	override function viewDidMount() {
-		value = [for(type in initialValue) printer.printTypeDefinition(type)].join('\n');
+		var v = [for(type in initialValue) printer.printTypeDefinition(type)].join('\n');
+		Callback.defer(() -> value = v);
 	}
 }
