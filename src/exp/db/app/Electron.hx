@@ -16,7 +16,8 @@ class Electron {
 			var win = new BrowserWindow( {
 				width: 1440, height: 900,
 				webPreferences: {
-					nodeIntegration: true
+					enableRemoteModule: true,
+					nodeIntegration: true,
 				}
 			} );
 			win.on(closed, function() {
