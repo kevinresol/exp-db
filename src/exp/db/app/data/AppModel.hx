@@ -18,17 +18,17 @@ class AppModel implements Model {
 	}
 	
 	@:transition
-	function openDatabase() {
+	function openDatabase(schema, content) {
 		return selectDirectory()
 			.next(path -> {
 				Outcomes.multi({
 					schema: tink.Json.parse((Path.join([path, 'schema.json']).getContent():DatabaseSchema)),
 					content: tink.Json.parse((Path.join([path, 'content.json']).getContent():DatabaseContent)),
-					path: Success(path),
+					// path: Success(path),
 				});
 			})
 			.next(data -> {
-				savePath: data.path,
+				// savePath: data.path,
 				database: DatabaseModel.fromDatabase({
 					tables: [for(table in data.schema.tables) {
 						name: table.name,

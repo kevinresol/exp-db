@@ -4,6 +4,12 @@ import exp.db.*;
 import exp.db.Database;
 import exp.db.Table;
 
+using tink.CoreApi;
+
+typedef Raw = {
+	final schema:String;
+	final content:String;
+}
 class DatabaseModel implements Model {
 	@:constant var tables:ObservableMap<String, TableModel> = @byDefault new ObservableMap([]);
 	@:editable var types:List<CustomType> = @byDefault null;
@@ -13,6 +19,33 @@ class DatabaseModel implements Model {
 	
 	public function addTable(name:String) {
 		if(!tables.exists(name)) tables.set(name, new TableModel({name: name}));
+	}
+	
+	public static function fromRaw(raw:Raw) {
+		return switch [tink.Json.parse((raw.schema:DatabaseSchema)), tink.Json.parse((raw.content:DatabaseContent))] {
+			case [Failure(e), _]:
+				Failure(new Error('Invalid schema data'));
+			case [_, Failure(e)]:
+				Failure(new Error('Invalid content data'));
+			case [Success(schema), Success(content)]:
+				Success(fromDatabase({
+					tables: [for(table in schema.tables) {
+						name: table.name,
+						columns: table.columns,
+						rows: content.tables.first(v -> v.name == table.name).map(v -> v.rows).orNull(),
+					}],
+					types: schema.types,
+				}));
+		}
+	}
+	
+	public function toRaw():Raw {
+		inline function format(json:String):String return js.Lib.require('prettier').format(json, {parser: 'json'});
+		
+		return {
+			schema: format(tink.Json.stringify(getSchema())),
+			content: format(tink.Json.stringify(getContent())),
+		}
 	}
 	
 	public static function fromDatabase(v:Database) {
