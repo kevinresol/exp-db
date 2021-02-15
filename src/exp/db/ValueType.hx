@@ -1,6 +1,6 @@
 package exp.db;
 
-import tink.pure.List;
+import tink.pure.Vector;
 using tink.CoreApi;
 
 @:using(exp.db.ValueType.ValueTypeTools)
@@ -9,8 +9,8 @@ enum ValueType {
 	Integer;
 	Text;
 	Boolean;
-	Enumeration(list:List<String>);
-	SubTable(columns:List<Column>);
+	Enumeration(list:Vector<String>);
+	SubTable(columns:Vector<Column>);
 	Ref(table:String);
 	Custom(name:String);
 }
@@ -22,7 +22,7 @@ class ValueTypeTools {
 			case Integer: Integer(0);
 			case Text: Text('');
 			case Boolean: Boolean(true);
-			case Enumeration(list): Enumeration(list.first().orNull());
+			case Enumeration(list): Enumeration(list[0]);
 			case SubTable(columns): SubTable([]);
 			case Ref(table): Ref('');
 			case Custom(name): null;
@@ -61,7 +61,7 @@ class ValueTypeTools {
 			case [Enumeration(list), Identifier(v) | Integer('$_' => v) | Text(v) | Boolean((_ ? 'true' : 'false') => v) | Enumeration(v) | Ref(v)] if(list.exists(i -> i == v)):
 				Success(Enumeration(v));
 			case [Enumeration(list), _]:
-				Success(Enumeration(list.first().orNull())); // fallback default
+				Success(Enumeration(list[0])); // fallback default
 				
 			case [SubTable(_), SubTable(v)]:
 				Success(SubTable(v));
@@ -113,12 +113,12 @@ class ValueTypeTools {
 	public static function validateCustomValue(type:CustomType, value:CustomValue, getCustomType:String->Outcome<CustomType, Error>):Outcome<Noise, Error> {
 		return Error.catchExceptions(() -> {
 			function check(ctor, numArgs, next:CustomType.Field->Void) {
-				switch type.fields.first(f -> f.name == ctor) {
-					case None:
+				switch type.fields.find(f -> f.name == ctor) {
+					case null:
 						throw '"$ctor" is not part of ${type.name}';
-					case Some(field) if(field.args.length != numArgs):
+					case field if(field.args.length != numArgs):
 						throw '"$ctor" expects ${field.args.length} arguments but got ${numArgs}';
-					case Some(field):
+					case field:
 						next(field);
 				}
 			}

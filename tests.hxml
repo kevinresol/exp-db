@@ -4,5 +4,6 @@
 
 -lib tink_unittest
 
+-D no-deprecation-warnings
 -D analyzer-optimize
 --macro exp.db.util.TypeBuilder.build('schema.json', 'foo.data')

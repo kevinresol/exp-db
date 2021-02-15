@@ -10,23 +10,11 @@
 				"$haxe-error",
 				"$haxe-trace"
 			],
-			"group": "build",
-			"label": "Run Tests"
-		},
-		{
-			"type": "haxe",
-			"args": "active configuration",
-			"problemMatcher": [
-				"$haxe-absolute",
-				"$haxe",
-				"$haxe-error",
-				"$haxe-trace"
-			],
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			},
-			"label": "haxe: active configuration"
+			"label": "Run Tests"
 		}
 	]
 }

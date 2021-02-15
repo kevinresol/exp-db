@@ -1,8 +1,8 @@
 package exp.db;
 
-import tink.pure.List;
+import tink.pure.Vector;
 
 typedef CustomValue = {
 	final name:String;
-	final args:List<Value>;
+	final args:Vector<Value>;
 }

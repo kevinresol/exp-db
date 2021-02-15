@@ -1,6 +1,6 @@
 package exp.db;
 
-import tink.pure.List;
+import tink.pure.Vector;
 
 @:forward
 abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject {
@@ -73,12 +73,12 @@ abstract CustomType(CustomTypeObject) from CustomTypeObject to CustomTypeObject 
 
 typedef CustomTypeObject = {
 	final name:String;
-	final fields:List<Field>;
+	final fields:Vector<Field>;
 }
 
 typedef Field = {
 	final name:String;
-	final args:List<Argument>;
+	final args:Vector<Argument>;
 }
 
 typedef Argument = {

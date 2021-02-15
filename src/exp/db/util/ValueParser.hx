@@ -1,7 +1,7 @@
 package exp.db.util;
 
 import exp.db.*;
-import tink.pure.List;
+import tink.pure.Vector;
 
 using tink.CoreApi;
 
@@ -41,7 +41,7 @@ class ValueParser {
 		}
 	}
 	
-	public static function parseSubTable<T>(v:Value, f:List<Row>->T):T {
+	public static function parseSubTable<T>(v:Value, f:Vector<Row>->T):T {
 		switch v {
 			case SubTable(v): return f(v);
 			case v: throw 'unexpected value for type "SubTable": $v';

@@ -3,7 +3,7 @@ package exp.db.util;
 import haxe.macro.Expr;
 
 class Converter {
-	public function columnsToComplexType(columns:List<Column>, getCustomType:String->ComplexType):ComplexType {
+	public function columnsToComplexType(columns:Vector<Column>, getCustomType:String->ComplexType):ComplexType {
 		var ret = TAnonymous(fields);
 		for(column in columns) {
 			fields.push({

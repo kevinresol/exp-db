@@ -1,4 +1,4 @@
-# @install: lix --silent download "gh://github.com/haxetink/tink_slice#c577df8e51364da52196aa013dd95e0a528f6225" into tink_slice/0.1.0/github/c577df8e51364da52196aa013dd95e0a528f6225
+# @install: lix --silent download "gh://github.com/haxetink/tink_slice#25b0d0ea743c1c61d8d24b5dbe972004ba59e9e1" into tink_slice/0.1.0/github/25b0d0ea743c1c61d8d24b5dbe972004ba59e9e1
 -lib tink_core
--cp ${HAXE_LIBCACHE}/tink_slice/0.1.0/github/c577df8e51364da52196aa013dd95e0a528f6225/src
+-cp ${HAXE_LIBCACHE}/tink_slice/0.1.0/github/25b0d0ea743c1c61d8d24b5dbe972004ba59e9e1/src
 -D tink_slice=0.1.0

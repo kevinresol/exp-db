@@ -3,7 +3,7 @@ package exp.db.util;
 import haxe.macro.Expr;
 import haxe.macro.Context;
 import haxe.Json;
-import tink.pure.List;
+import tink.pure.Vector;
 import exp.db.Database;
 import exp.db.Table;
 
@@ -22,23 +22,23 @@ class TypeBuilder {
 	
 	static function parseDatabaseRepresentation(v:DatabaseRepresentation):DatabaseSchema {
 		return {
-			tables: List.fromArray([for(table in v.tables) {
+			tables: [for(table in v.tables) ({
 				name: table.name,
-				columns: List.fromArray([for(column in table.columns) {
+				columns: [for(column in table.columns) ({
 					name: column.name,
 					type: column.type.toValueType(),
-				}]),
-			}]),
-			types: List.fromArray([for(type in v.types) new CustomType({
+				}:Column)],
+			}:TableSchema)],
+			types: [for(type in v.types) new CustomType({
 				name: type.name,
-				fields: List.fromArray([for(field in type.fields) {
+				fields: [for(field in type.fields) ({
 					name: field.name,
-					args: List.fromArray([for(arg in field.args) {
+					args: [for(arg in field.args) ({
 						name: arg.name,
 						type: arg.type.toValueType(),
-					}]),
-				}]),
-			})]),
+					}:exp.db.CustomType.Argument)],
+				}:exp.db.CustomType.Field)],
+			})],
 		}
 	}
 	
@@ -86,7 +86,10 @@ class TypeBuilder {
 		
 		
 		for(table in schema.tables) {
-			var idName = table.columns.first(c -> c.type == Identifier).map(c -> c.name);
+			var idName = switch table.columns.find(c -> c.type == Identifier) {
+				case null: None;
+				case c: Some(c.name);
+			}
 			var fieldName = uncapitalize(table.name);
 			var ct = makeTableCt(table.name);
 			
@@ -102,7 +105,7 @@ class TypeBuilder {
 			init.push({
 				field: fieldName,
 				expr: macro {
-					var table = content.tables.first(v -> v.name == $v{table.name}).force();
+					var table = content.tables.find(v -> v.name == $v{table.name});
 					${tableParser(table.columns, macro table.rows, macro db)};
 				}
 			});
@@ -155,7 +158,7 @@ class TypeBuilder {
 		var dbCt = makeDatabaseCt();
 		
 		var def = macro class $parserName {
-			public static function parse(rows:tink.pure.List<exp.db.Row>, db:tink.core.Ref<$dbCt>) {
+			public static function parse(rows:tink.pure.Vector<exp.db.Row>, db:tink.core.Ref<$dbCt>) {
 				return ${tableParser(table.columns, macro rows, macro db)};
 			}
 		}
@@ -183,22 +186,22 @@ class TypeBuilder {
 	}
 	
 	function getCustomType(name:String):CustomType {
-		return schema.types.first(v -> v.name == name).force();
+		return schema.types.find(v -> v.name == name);
 	}
 	
-	function tableParser(columns:List<Column>, rows:Expr, db:Expr):Expr {
+	function tableParser(columns:Vector<Column>, rows:Expr, db:Expr):Expr {
 		var rowCt = columnsToComplexType(columns);
 		return macro {
 			var rows = $rows;
 			var list = [for(row in rows) (${rowParser(columns, macro row, db)}:$rowCt)];
-			${switch columns.first(c -> c.type == Identifier).map(c -> c.name) {
-				case Some(id): macro ([for(v in list) v.$id => v]:haxe.ds.ReadOnlyMap<String, $rowCt>);
-				case None: macro (list:haxe.ds.ReadOnlyArray<$rowCt>);
+			${switch columns.find(c -> c.type == Identifier) {
+				case null: macro (list:haxe.ds.ReadOnlyArray<$rowCt>);
+				case {name: id}: macro ([for(v in list) v.$id => v]:haxe.ds.ReadOnlyMap<String, $rowCt>);
 			}}
 		}
 	}
 	
-	function rowParser(columns:List<Column>, row:Expr, db:Expr):Expr {
+	function rowParser(columns:Vector<Column>, row:Expr, db:Expr):Expr {
 		var pos = Context.currentPos();
 		return EObjectDecl([for(column in columns) {
 			field: column.name,
@@ -274,9 +277,9 @@ class TypeBuilder {
 				TPath({pack: ['enums'], name: 'Enums', params: [for(v in list) TPExpr(macro $v{v})]});
 			case SubTable(columns):
 				var ct = columnsToComplexType(columns);
-				switch columns.first(c -> c.type == Identifier) {
-					case Some(_): macro:haxe.ds.ReadOnlyMap<String, $ct>;
-					case None: macro:haxe.ds.ReadOnlyArray<$ct>;
+				switch columns.find(c -> c.type == Identifier) {
+					case null: macro:haxe.ds.ReadOnlyArray<$ct>;
+					case _: macro:haxe.ds.ReadOnlyMap<String, $ct>;
 				}
 			case Ref(table):
 				var ct = makeTableCt(table);
@@ -286,7 +289,7 @@ class TypeBuilder {
 		}
 	}
 	
-	function columnsToComplexType(columns:List<Column>):ComplexType {
+	function columnsToComplexType(columns:Vector<Column>):ComplexType {
 		var fields = [];
 		var ret = TAnonymous(fields);
 		for(column in columns) {
@@ -354,7 +357,7 @@ private abstract TypeRepresentation(Dynamic) {
 			else if(this == 'Boolean') Boolean;
 			else if(this.Enumeration != null) Enumeration((this.Enumeration.list:Array<String>));
 			else if(this.Custom != null) Custom(this.Custom.name);
-			else if(this.SubTable != null) SubTable(List.fromArray((this.SubTable.columns:Array<ColumnRepresentation>).map(TypeBuilder.parseColumnRepresentation)));
+			else if(this.SubTable != null) SubTable(Vector.fromArray((this.SubTable.columns:Array<ColumnRepresentation>).map(TypeBuilder.parseColumnRepresentation)));
 			else if(this.Ref != null) Ref(this.Ref.table);
 			else throw 'TODO $this';
 	}

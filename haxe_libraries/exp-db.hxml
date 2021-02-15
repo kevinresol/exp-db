@@ -1,6 +1,5 @@
+-cp src
 -lib tink_pure
 -lib tink_json
 -lib quick-enums
--cp ${SCOPE_DIR}/./src
 -D exp-db=0.0.0
---macro Sys.println("haxe_libraries/exp-db.hxml:5: [Warning] Using dev version of library exp-db")

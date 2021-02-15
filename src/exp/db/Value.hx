@@ -1,6 +1,6 @@
 package exp.db;
 
-import tink.pure.List;
+import tink.pure.Vector;
 
 enum Value {
 	Identifier(v:String);
@@ -8,7 +8,7 @@ enum Value {
 	Text(v:String);
 	Boolean(v:Bool);
 	Enumeration(v:String);
-	SubTable(rows:List<Row>);
+	SubTable(rows:Vector<Row>);
 	Ref(id:String);
 	Custom(v:CustomValue);
 }

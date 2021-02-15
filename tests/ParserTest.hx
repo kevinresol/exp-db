@@ -5,7 +5,6 @@ import exp.db.Value;
 import exp.db.ValueType;
 import exp.db.CustomType;
 import exp.db.CustomValue;
-import tink.pure.List;
 
 
 @:asserts
