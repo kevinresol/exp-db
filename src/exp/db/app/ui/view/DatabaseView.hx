@@ -4,6 +4,7 @@ import mui.core.*;
 import exp.db.app.ui.component.*;
 import exp.db.app.data.DatabaseModel;
 import exp.db.ValueType;
+import why.toast.MaterialUiSnackbar;
 
 class DatabaseView extends View {
 	@:attr var database:DatabaseModel;
@@ -30,47 +31,51 @@ class DatabaseView extends View {
 	
 	// function render() '<><Sheet ${...table}/></>';
 	function render() '
-		<div class=${ROOT}>
-			<div class=${CONTAINER}>
-				<if ${showCustomTypeEditor}>
-					<CustomTypeEditor
+		<>
+			<CssBaseline />
+			<div class=${ROOT}>
+				<div class=${CONTAINER}>
+					<if ${showCustomTypeEditor}>
+						<CustomTypeEditor
+							tables=${database.tableNames}
+							initialValue=${database.types}
+							onSubmit=${types -> database.types = types}
+						/>
+					</if>
+					<if ${table != null}>
+						<TableView database=${database} table=${table}/>
+					</if>
+					<TableAdder
+						open=${showTableAdder}
 						tables=${database.tableNames}
-						initialValue=${database.types}
-						onSubmit=${types -> database.types = types}
+						onCancel=${showTableAdder = false}
+						onConfirm=${name -> {database.addTable(name); showTableAdder = false;}}
 					/>
-				</if>
-				<if ${table != null}>
-					<TableView database=${database} table=${table}/>
-				</if>
-				<TableAdder
-					open=${showTableAdder}
-					tables=${database.tableNames}
-					onCancel=${showTableAdder = false}
-					onConfirm=${name -> {database.addTable(name); showTableAdder = false;}}
-				/>
+				</div>
+				<BottomBar
+					activeTable=${activeTable}
+					showCustomTypeEditor=${showCustomTypeEditor}
+					tables=${[for(name in database.tables.keys()) name]}
+				>
+					<Tooltip title="New Table">
+						<IconButton onClick=${_ -> showTableAdder = true}>
+							<FontAwesomeIcon name="plus-circle"/>
+						</IconButton>
+					</Tooltip>
+					<Tooltip title="Edit Custom Types">
+						<IconButton onClick=${_ -> {showCustomTypeEditor = true; activeTable = null;}}>
+							<FontAwesomeIcon name="book"/>
+						</IconButton>
+					</Tooltip>
+					<Tooltip title="Export">
+						<IconButton onClick=${onSave}>
+							<FontAwesomeIcon name="download"/>
+						</IconButton>
+					</Tooltip>
+				</BottomBar>
 			</div>
-			<BottomBar
-				activeTable=${activeTable}
-				showCustomTypeEditor=${showCustomTypeEditor}
-				tables=${[for(name in database.tables.keys()) name]}
-			>
-				<Tooltip title="New Table">
-					<IconButton onClick=${_ -> showTableAdder = true}>
-						<FontAwesomeIcon name="plus-circle"/>
-					</IconButton>
-				</Tooltip>
-				<Tooltip title="Edit Custom Types">
-					<IconButton onClick=${_ -> {showCustomTypeEditor = true; activeTable = null;}}>
-						<FontAwesomeIcon name="book"/>
-					</IconButton>
-				</Tooltip>
-				<Tooltip title="Export">
-					<IconButton onClick=${onSave}>
-						<FontAwesomeIcon name="download"/>
-					</IconButton>
-				</Tooltip>
-			</BottomBar>
-		</div>
+			<MaterialUiSnackbar ref=${v -> why.Toast.inst = v} renderChildren=${options -> options.title}/>
+		</>
 	';
 	
 	override function viewDidMount() {

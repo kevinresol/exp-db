@@ -4,7 +4,7 @@ import mui.core.*;
 import haxe.macro.Expr.TypeDefKind;
 import coconut.react.*;
 import exp.db.Database;
-import exp.db.app.ui.*;
+import exp.db.app.ui.view.DatabaseView;
 import exp.db.app.data.DatabaseModel;
 import tink.Anon.merge;
 import electron.renderer.IpcRenderer;
@@ -32,12 +32,13 @@ class Main extends View {
 					<Button variant=${Contained} color=${Primary} onClick=${() -> database = new DatabaseModel()}>New</Button>
 					<Button variant=${Contained} color=${Primary} onClick=${load}>Load</Button>
 				<case ${db}>
-					<AppContainer database=${db} onSave=${save}/>
+					<DatabaseView database=${db} onSave=${save}/>
 			</switch>
 		</>
 	';
 	
 	override function viewDidMount() {
+		// handle Ctrl+S / Cmd+S keyboard shortcut from electron
 		untilUnmounted({
 			IpcRenderer.on('command', function onCommand(event, data) {
 				if(data == 'save') {
