@@ -1,4 +1,0 @@
-# @install: lix --silent download "gh://github.com/haxetink/tink_csss#0dbd838418b26f1387ca23bcc8e33df083d1d0fa" into tink_csss/0.2.2/github/0dbd838418b26f1387ca23bcc8e33df083d1d0fa
--lib tink_parse
--cp ${HAXE_LIBCACHE}/tink_csss/0.2.2/github/0dbd838418b26f1387ca23bcc8e33df083d1d0fa/src
--D tink_csss=0.2.2

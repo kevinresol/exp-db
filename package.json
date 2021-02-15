@@ -1,8 +1,0 @@
-{
-	"scripts": {
-		"start": "electron bin/app"
-	},
-	"devDependencies": {
-		"electron": "^11.2.3"
-	}
-}

@@ -1,24 +1,13 @@
 # Experimental Game Database
 
-## How to build and run the editor
-
-- `yarn global add electron lix`
-- `lix download`
-- `haxe build-app.hxml && haxe build-electron.hxml`
-- `cd bin/app`
-- `yarn`
-- `electron .`
-
-## Demo
-
-Some demo video clips can be found here: https://twitter.com/kevinresol/status/1278713601004453888
-
 ## Custom Types
 
 Custom types are edited in Haxe enum syntax.
 
 
 ## Editor output
+
+Default editor: https://github.com/kevinresol/exp-db-editor
 
 The editor will export 2 files: `schema.json` & `content.json`
 
